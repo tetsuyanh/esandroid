@@ -1,2 +1,5 @@
 # esandroid
-esa client for Android
+Unofficial [esa](https://esa.io) client app for Android
+
+# License
+MIT Licence, see [LICENSE](LICENSE)
