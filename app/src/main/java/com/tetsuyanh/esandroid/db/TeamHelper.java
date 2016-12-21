@@ -16,8 +16,8 @@ import java.util.List;
  */
 
 public class TeamHelper {
-    private static final String TAG = "TeamHelper";
-    private static final String TABLE_NAME = "urls";
+    private static final String TAG = TeamHelper.class.getSimpleName();
+    private static final String TABLE_NAME = "teams";
 
     public static List<Team> getTeamList(final Context context) {
         List<Team> list = new ArrayList<Team>();
@@ -57,7 +57,7 @@ public class TeamHelper {
         DataSQLiteHelper DataHelper = null;
         try {
             DataHelper = new DataSQLiteHelper(context);
-            String sql = "select name from teams where name = ?";
+            String sql = "select _id, name from teams where name = ?";
             if (BuildConfig.IS_DEBUG) {
                 Log.d(TAG, "sql:" + sql);
             }

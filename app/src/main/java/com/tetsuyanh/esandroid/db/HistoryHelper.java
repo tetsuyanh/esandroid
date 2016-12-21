@@ -1,12 +1,12 @@
 package com.tetsuyanh.esandroid.db;
 
-import com.tetsuyanh.esandroid.BuildConfig;
-import com.tetsuyanh.esandroid.entity.Post;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
+
+import com.tetsuyanh.esandroid.BuildConfig;
+import com.tetsuyanh.esandroid.entity.Post;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,11 +15,11 @@ import java.util.List;
  * Created by tetsuyanh on 2016/12/17.
  */
 
-public class BookmarkHelper {
-    private static final String TAG = BookmarkHelper.class.getSimpleName();
-    private static final String TABLE_NAME = "bookmarks";
+public class HistoryHelper {
+    private static final String TAG = HistoryHelper.class.getSimpleName();
+    private static final String TABLE_NAME = "histories";
 
-    public static List<Post> getBookmarkList(final Context context, final Integer teamId) {
+    public static List<Post> getHistoryList(final Context context, final Integer teamId) {
         // must return array instance
         List<Post> list = new ArrayList<Post>();
         Post Post = null;
@@ -28,7 +28,7 @@ public class BookmarkHelper {
         try {
             mHelper = new DataSQLiteHelper(context);
 
-            String sql = "select post_id, title from bookmarks where team_id = ? order by title";
+            String sql = "select post_id, title from histories where team_id = ? order by created_at desc";
             if (BuildConfig.IS_DEBUG) {
                 Log.d(TAG, "sql:" + sql);
             }
@@ -52,13 +52,13 @@ public class BookmarkHelper {
         return list;
     }
 
-    public static Post getBookmark(final Context context, final Integer teamId, final Integer postId) {
+    public static Post getHistory(final Context context, final Integer teamId, final Integer postId) {
         Post post = null;
         Cursor c = null;
         DataSQLiteHelper mHelper = null;
         try {
             mHelper = new DataSQLiteHelper(context);
-            String sql = "select post_id, title from bookmarks where team_id = ? and post_id = ?";
+            String sql = "select post_id, title from histories where team_id = ? and post_id = ?";
             if (BuildConfig.IS_DEBUG) {
                 Log.d(TAG, "sql:" + sql);
             }
@@ -86,6 +86,7 @@ public class BookmarkHelper {
         values.put("post_id", post.GetId());
         values.put("team_id", teamId);
         values.put("title", post.GetTitle());
+        values.put("created_at", (int)System.currentTimeMillis());
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
         long result = mHelper.mDb.insert(TABLE_NAME, null, values);
         mHelper.cleanup();

@@ -13,7 +13,7 @@ import android.util.Log;
  */
 
 public class UrlHelper {
-    private static final String TAG = "UrlHelper";
+    private static final String TAG = UrlHelper.class.getSimpleName();
     private static final String TABLE_NAME = "urls";
 
     public static Url getUrl(final Context context, final String key) {

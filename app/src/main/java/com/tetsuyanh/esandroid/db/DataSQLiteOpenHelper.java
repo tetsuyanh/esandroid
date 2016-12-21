@@ -16,7 +16,7 @@ import java.io.InputStreamReader;
 
 public class DataSQLiteOpenHelper extends SQLiteOpenHelper {
     public Context mContext;
-    public static final String TAG = "DataSQLiteOpenHelper";
+    public static final String TAG = DataSQLiteOpenHelper.class.getSimpleName();
     public static final String DB_NAME = "esandroid";
     public static final int DB_VERSION = 1;
 

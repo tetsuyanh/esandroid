@@ -2,13 +2,14 @@ package com.tetsuyanh.esandroid;
 
 import com.tetsuyanh.esandroid.esa.EsaWeb;
 import com.tetsuyanh.esandroid.entity.Post;
-import com.tetsuyanh.esandroid.db.Data;
-import com.tetsuyanh.esandroid.db.DataSQLite;
+import com.tetsuyanh.esandroid.service.BookmarkService;
+import com.tetsuyanh.esandroid.service.HistoryService;
+import com.tetsuyanh.esandroid.service.UrlService;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -31,18 +32,17 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    public final String TAG = "MainActivity";
+    private final String TAG = MainActivity.class.getSimpleName();
+
+    private String mCurrentTeam;
+    private UrlService mUrlService;
+    private BookmarkService mBookmarkService;
+    private HistoryService mHistoryService;
 
     private WebView mWebView;
     private View mLoadingSpinner;
-
-    private String mCurrentTeam;
-
-    private Data mData;
-
     private FloatingActionButton mFabAdd;
     private FloatingActionButton mFabRemove;
-    private TextView mNavText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,18 +53,25 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // data
-        mData = new DataSQLite(getApplicationContext());
+        // services
+        Context context = getApplicationContext();
+        mUrlService = new UrlService(context);
+        mBookmarkService = new BookmarkService(context);
+        mHistoryService = new HistoryService(context);
+
+        // views
+        mLoadingSpinner = findViewById(R.id.loading_spinner);
+        mFabAdd = (FloatingActionButton) findViewById(R.id.fab_add);
+        mFabRemove = (FloatingActionButton) findViewById(R.id.fab_remove);
 
         // fab
-        FloatingActionButton fab_add = (FloatingActionButton) findViewById(R.id.fab_add);
-        fab_add.setOnClickListener(new View.OnClickListener() {
+        mFabAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Integer postId = EsaWeb.GetPostId(mWebView.getUrl());
                 String title = EsaWeb.GetTitle(mWebView.getTitle());
                 if (postId != null) {
-                    if (mData.PushBookmark(mCurrentTeam, new Post(postId, title))) {
+                    if (mBookmarkService.Push(mCurrentTeam, new Post(postId, title))) {
                         mFabAdd.setVisibility(View.GONE);
                         mFabRemove.setVisibility(View.VISIBLE);
                         updateDrawerMenu();
@@ -75,13 +82,12 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
-        FloatingActionButton fab_remove = (FloatingActionButton) findViewById(R.id.fab_remove);
-        fab_remove.setOnClickListener(new View.OnClickListener() {
+        mFabRemove.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Integer postId = EsaWeb.GetPostId(mWebView.getUrl());
                 if (postId != null) {
-                    if (mData.PopBookmark(mCurrentTeam, postId)) {
+                    if (mBookmarkService.Pop(mCurrentTeam, postId)) {
                         mFabRemove.setVisibility(View.GONE);
                         mFabAdd.setVisibility(View.VISIBLE);
                         updateDrawerMenu();
@@ -103,15 +109,11 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        mLoadingSpinner = findViewById(R.id.loading_spinner);
-        mFabAdd = (FloatingActionButton) findViewById(R.id.fab_add);
-        mFabRemove = (FloatingActionButton) findViewById(R.id.fab_remove);
-        mNavText = (TextView)findViewById(R.id.nav_header_label);
-
+        // webView
         mWebView = (WebView) findViewById(R.id.webview);
         mWebView.setWebViewClient(mWebViewClient);
         mWebView.getSettings().setJavaScriptEnabled(true);
-        String url = mData.GetLatestUrl();
+        String url = mUrlService.GetLatestUrl();
         if (url == null) {
             url = EsaWeb.URL_TOP;
         }
@@ -134,7 +136,6 @@ public class MainActivity extends AppCompatActivity
     protected void onStop() {
         Log.d(TAG, "----- onStop");
         super.onStop();
-        getDelegate().onStop();
     }
 
     /** WebViewClientクラス */
@@ -160,10 +161,10 @@ public class MainActivity extends AppCompatActivity
 
             mLoadingSpinner.setVisibility(View.GONE);
 
-            // チームドメインのみ管理対象
+            // update under team domain
             String team = EsaWeb.GetTeam(url);
             if (team != null) {
-                mData.SetLatestUrl(url);
+                mUrlService.SetLatestUrl(url);
 
                 boolean shouldUpdateMenu = false;
                 if (mCurrentTeam == null || !mCurrentTeam.equals(team)) {
@@ -172,15 +173,14 @@ public class MainActivity extends AppCompatActivity
                     shouldUpdateMenu = true;
                 }
 
-                // 記事のみfabを表示
                 Integer postId = EsaWeb.GetPostId(url);
                 if (postId != null) {
-                    Boolean isBookMarked = mData.HasBookmark(team, postId);
+                    Boolean isBookMarked = mBookmarkService.Has(team, postId);
                     mFabAdd.setVisibility(isBookMarked ? View.GONE : View.VISIBLE);
                     mFabRemove.setVisibility(!isBookMarked ? View.GONE : View.VISIBLE);
 
                     String title = EsaWeb.GetTitle(mWebView.getTitle());
-                    //mData.PushHistory(mCurrentTeam, new Post(postId, title));
+                    mHistoryService.Push(mCurrentTeam, new Post(postId, title));
                     shouldUpdateMenu = true;
                 }
 
@@ -232,11 +232,9 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
         String title = (String)item.getTitle();
         String[] parts = title.split(":");
 
@@ -260,7 +258,7 @@ public class MainActivity extends AppCompatActivity
 
         menu.clear();
 
-        List<Post> bookmarks = mData.GetBookmarks(mCurrentTeam);
+        List<Post> bookmarks = mBookmarkService.GetList(mCurrentTeam);
         if (bookmarks != null && bookmarks.size() > 0) {
             Menu menuBookmarks = menu.addSubMenu(R.string.drawer_bookmarks);
             for (Post p : bookmarks) {
@@ -268,22 +266,16 @@ public class MainActivity extends AppCompatActivity
             }
         }
 
-        /*List<Post> histories = mData.GetHistories(mCurrentTeam);
+        List<Post> histories = mHistoryService.GetList(mCurrentTeam);
         Menu menuHistories = menu.addSubMenu(R.string.drawer_histories);
         for(Post p: histories) {
             menuHistories.add(p.GetId() + ":" + p.GetTitle());
-        }*/
-
-        navView.invalidate();
+        }
     }
 
     private void showToast(String message) {
         Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
         toast.show();
-    }
-
-    private void showSnackBar(View view, String message) {
-        Snackbar.make(view, message, Snackbar.LENGTH_LONG).setAction("Action", null).show();
     }
 
 }

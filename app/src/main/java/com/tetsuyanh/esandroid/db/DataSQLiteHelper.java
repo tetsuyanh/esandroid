@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
  */
 
 public class DataSQLiteHelper {
-    public static final String TAG = "DataSQLiteHelper";
+    public static final String TAG = DataSQLiteHelper.class.getSimpleName();
 
     public SQLiteDatabase mDb;
     private final DataSQLiteOpenHelper mOpenHelper;

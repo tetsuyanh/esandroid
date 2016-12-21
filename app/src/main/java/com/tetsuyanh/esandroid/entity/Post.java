@@ -5,11 +5,8 @@ package com.tetsuyanh.esandroid.entity;
  */
 
 public class Post {
-
-    public static final String TAG = "Post";
-
-    private Integer id;
-    private String title;
+    private final Integer id;
+    private final String title;
 
     public Post(Integer id, String title) {
         this.id = id;
@@ -24,4 +21,12 @@ public class Post {
         return title;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof Post)) {
+            return false;
+        }
+        Post other = (Post)obj;
+        return this.id.compareTo(other.id) == 0;
+    }
 }

@@ -1,48 +1,21 @@
 package com.tetsuyanh.esandroid.entity;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
 /**
  * Created by tetsuyanh on 2016/12/18.
  */
 
-public class Team implements Parcelable {
-
-    private static final String TABLE_NAME = "teams";
-
-    private Integer id;
-    private String name;
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel out, int flags) {
-        out.writeString(name);
-    }
-
-    public static final Creator<Team> CREATOR
-            = new Creator<Team>() {
-        public Team createFromParcel(Parcel in) {
-            return new Team(in);
-        }
-
-        public Team[] newArray(int size) {
-            return new Team[size];
-        }
-    };
+public class Team {
+    private final Integer id;
+    private final String name;
 
     public Team(Integer id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    private Team(Parcel in) {
-        this.id = in.readInt();
-        this.name = in.readString();
+    public Team(String name) {
+        this.id = -1;
+        this.name = name;
     }
 
     public Integer GetId() {
@@ -51,5 +24,14 @@ public class Team implements Parcelable {
 
     public String GetName() {
         return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof Team)) {
+            return false;
+        }
+        Team other = (Team)obj;
+        return this.name.equals(other.name);
     }
 }
