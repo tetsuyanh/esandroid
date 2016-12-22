@@ -3,8 +3,8 @@
     <gradient
         android:id="@+id/nav_bar_gradient"
         android:angle="135"
+        android:startColor="#81C784"
         android:centerColor="#4CAF50"
         android:endColor="#2E7D32"
-        android:startColor="#81C784"
         android:type="linear" />
 </shape>

@@ -8,6 +8,8 @@ import com.tetsuyanh.esandroid.service.UrlService;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity
     private View mLoadingSpinner;
     private FloatingActionButton mFabAdd;
     private FloatingActionButton mFabRemove;
+    private View mNavLayount;
+    private TextView mNavTitle;
+    private GradientDrawable mNavBg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -169,7 +174,7 @@ public class MainActivity extends AppCompatActivity
                 boolean shouldUpdateMenu = false;
                 if (mCurrentTeam == null || !mCurrentTeam.equals(team)) {
                     mCurrentTeam = team;
-                    updateDrawerTitle(mCurrentTeam);
+                    updateDrawerHeader(mCurrentTeam);
                     shouldUpdateMenu = true;
                 }
 
@@ -245,11 +250,29 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private void updateDrawerTitle(String team) {
+    private void updateDrawerHeader(String teamName) {
+        Log.d(TAG, "teamName : " + teamName);
+        if (mNavTitle == null) {
+            mNavTitle = (TextView)findViewById(R.id.nav_header_label);
+        }
+        if (mNavLayount == null) {
+            mNavLayount = (View)findViewById(R.id.nav_layout);
+        }
 
-        TextView text = (TextView)findViewById(R.id.nav_header_label);
-        text.setText(team);
-        text.invalidate();
+        mNavTitle.setText(teamName);
+        mNavTitle.invalidate();
+
+        // background colors depend on title string like random
+        mNavBg = (GradientDrawable)mNavLayount.getBackground();
+        int hash = teamName.hashCode();
+        int hashRed = (hash & 0x00FF0000) >> 16;
+        int hashGreen = (hash & 0x0000FF00) >> 8;
+        int hashBlue  = hash & 0x000000FF;
+        int colorStart = Color.rgb(128 + 64 * hashRed / 256, 128 + 64 * hashGreen / 256, 128 + 64 * hashBlue / 256);
+        int colorCenter = Color.rgb(80 + 96 * hashRed / 256, 80 + 96 * hashGreen / 256, 80 + 96 * hashBlue / 256);
+        int colorEnd = Color.rgb(48 + 80 * hashRed / 256, 48 + 80 * hashGreen / 256, 48 + 80  * hashBlue / 256);
+        int[] colors = {colorStart, colorCenter, colorEnd};
+        mNavBg.setColors(colors);
     }
 
     private void updateDrawerMenu() {
