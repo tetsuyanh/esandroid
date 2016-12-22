@@ -2,7 +2,7 @@
 
 <img src="https://raw.github.com/wiki/tetsuyanh/esandroid/img/logo_vertical.png" width="640"></img>
 
-esandroid is an unofficial [esa](https://esa.io) Android app. Let's use esa easily and quickly with smartphone.
+esandroid is unofficial [esa](https://esa.io) Android app. Let's use esa easily and quickly with smartphone.
 
 Modification of the icon is approved by esa LLC.
 
