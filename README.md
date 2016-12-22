@@ -11,7 +11,7 @@ Modification of the icon is approved by esa LLC.
 - Bookmark
 - History
 
-If you have a bug or question about above, report as issue here, not contact esa.
+If you have a bug or question about above, report a issue here, not contact esa.
 
 # License
 
