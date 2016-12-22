@@ -6,8 +6,6 @@ esandroid is unofficial [esa](https://esa.io) Android app. Let's use esa easily 
 
 Modification of the icon is approved by esa LLC.
 
-About [esa](https://esa.io).
-
 # Features
 
 - Bookmark
