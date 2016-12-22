@@ -23,21 +23,4 @@
 
     <include layout="@layout/content_main" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_add"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_action_add"
-        android:visibility="gone"/>
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab_remove"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:srcCompat="@drawable/ic_action_cancel"
-        android:visibility="gone"/>
-
 </android.support.design.widget.CoordinatorLayout>
