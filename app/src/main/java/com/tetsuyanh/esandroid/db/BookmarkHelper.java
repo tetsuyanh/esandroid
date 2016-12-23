@@ -22,7 +22,6 @@ public class BookmarkHelper {
     public static List<Post> getBookmarkList(final Context context, final Integer teamId) {
         // must return array instance
         List<Post> list = new ArrayList<Post>();
-        Post Post = null;
         Cursor c = null;
         DataSQLiteHelper mHelper = null;
         try {
@@ -52,35 +51,6 @@ public class BookmarkHelper {
         return list;
     }
 
-    public static Post getBookmark(final Context context, final Integer teamId, final Integer postId) {
-        Post post = null;
-        Cursor c = null;
-        DataSQLiteHelper mHelper = null;
-        try {
-            mHelper = new DataSQLiteHelper(context);
-            String sql = "select post_id, title from bookmarks where team_id = ? and post_id = ?";
-            if (BuildConfig.IS_DEBUG) {
-                Log.d(TAG, "sql:" + sql);
-            }
-            c = mHelper.mDb.rawQuery(sql, new String[]{teamId.toString(), postId.toString()});
-            boolean isResult = c.moveToFirst();
-            if (isResult) {
-                post = new Post(c.getInt(0), c.getString(1));
-                isResult = c.moveToNext();
-            }
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        } finally {
-            if (c != null) {
-                c.close();
-            }
-            if (mHelper != null) {
-                mHelper.cleanup();
-            }
-        }
-        return post;
-    }
-
     public static long insert(final Context context, final Integer teamId, final Post post) {
         ContentValues values = new ContentValues();
         values.put("post_id", post.GetId());
@@ -94,7 +64,7 @@ public class BookmarkHelper {
 
     public static long delete(final Context context, final Integer teamId, final Integer postId) {
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
-        int result = mHelper.mDb.delete(TABLE_NAME, "post_id = ?", new String[]{postId.toString()});
+        int result = mHelper.mDb.delete(TABLE_NAME, "team_id and post_id = ?", new String[]{teamId.toString(), postId.toString()});
         mHelper.cleanup();
         return result;
     }

@@ -6,11 +6,17 @@ import com.tetsuyanh.esandroid.service.BookmarkService;
 import com.tetsuyanh.esandroid.service.HistoryService;
 import com.tetsuyanh.esandroid.service.UrlService;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.View;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -42,6 +48,7 @@ public class MainActivity extends AppCompatActivity
     private View mLoadingSpinner;
     private MenuItem menuBookmark;
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "----- onCreate");
@@ -76,7 +83,7 @@ public class MainActivity extends AppCompatActivity
         mWebView.getSettings().setJavaScriptEnabled(true);
         String url = mUrlService.GetLatestUrl();
         if (url == null) {
-            url = EsaWeb.URL_TOP;
+            url = EsaWeb.URL_ROOT;
         }
         mWebView.loadUrl(url);
     }
@@ -99,74 +106,15 @@ public class MainActivity extends AppCompatActivity
         super.onStop();
     }
 
-    /** WebViewClientクラス */
-    private WebViewClient mWebViewClient = new WebViewClient() {
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            return false;
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            mLoadingSpinner.setVisibility(View.VISIBLE);
-
-            if (menuBookmark != null) menuBookmark.setVisible(false);
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-
-            mLoadingSpinner.setVisibility(View.GONE);
-
-            // update under team domain
-            String team = EsaWeb.GetTeam(url);
-            if (team != null) {
-                mUrlService.SetLatestUrl(url);
-
-                boolean shouldUpdateMenu = false;
-                if (mCurrentTeam == null || !mCurrentTeam.equals(team)) {
-                    mCurrentTeam = team;
-                    updateDrawerTitle(mCurrentTeam);
-                    shouldUpdateMenu = true;
-                }
-
-                Integer postId = EsaWeb.GetPostId(url);
-                if (postId != null) {
-                    Boolean isBookMarked = mBookmarkService.Has(team, postId);
-                    menuBookmark.setVisible(true);
-                    menuBookmark.getIcon().setAlpha(isBookMarked? 255 : 128);
-
-                    String title = EsaWeb.GetTitle(mWebView.getTitle());
-                    mHistoryService.Push(mCurrentTeam, new Post(postId, title));
-                    shouldUpdateMenu = true;
-                }
-
-                if (shouldUpdateMenu) {
-                    updateDrawerMenu();
-                }
-            }
-        }
-
-        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-            Log.d(TAG, "----- onReceivedError");
-        }
-    };
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (mWebView != null && mWebView.canGoBack()) {
+            mWebView.goBack();
         } else {
-            if (mWebView != null && mWebView.canGoBack()) {
-                mWebView.goBack();
-            } else {
-                super.onBackPressed();
-            }
+            super.onBackPressed();
         }
     }
 
@@ -186,8 +134,8 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_bookmark) {
             if (item.getIcon().getAlpha() == 128) {
-                Integer postId = EsaWeb.GetPostId(mWebView.getUrl());
-                String title = EsaWeb.GetTitle(mWebView.getTitle());
+                Integer postId = EsaWeb.getPostId(mWebView.getUrl());
+                String title = EsaWeb.getPostTitle(mWebView.getTitle());
                 if (postId != null) {
                     if (mBookmarkService.Push(mCurrentTeam, new Post(postId, title))) {
                         updateDrawerMenu();
@@ -198,7 +146,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             } else {
-                Integer postId = EsaWeb.GetPostId(mWebView.getUrl());
+                Integer postId = EsaWeb.getPostId(mWebView.getUrl());
                 if (postId != null) {
                     if (mBookmarkService.Pop(mCurrentTeam, postId)) {
                         updateDrawerMenu();
@@ -215,12 +163,14 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        String title = (String)item.getTitle();
-        String[] parts = title.split(":");
-
-        mWebView.loadUrl(EsaWeb.GetPost(mCurrentTeam, parts[0]));
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        try {
+            String title = (String) item.getTitle();
+            String[] parts = title.split(":");
+            mWebView.loadUrl(EsaWeb.getPostUrl(mCurrentTeam, Integer.parseInt(parts[0])));
+        } catch (Exception e) {
+            Log.e(TAG, e.toString());
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -228,7 +178,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateDrawerTitle(String team) {
-
         TextView text = (TextView)findViewById(R.id.nav_header_label);
         text.setText(team);
         text.invalidate();
@@ -259,5 +208,78 @@ public class MainActivity extends AppCompatActivity
         Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
         toast.show();
     }
+
+    /** WebViewClientクラス */
+    private WebViewClient mWebViewClient = new WebViewClient() {
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            return urlLoading(url);
+        }
+
+        @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            return urlLoading(request.getUrl().toString());
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+
+            mLoadingSpinner.setVisibility(View.VISIBLE);
+
+            if (menuBookmark != null) menuBookmark.setVisible(false);
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+
+            mLoadingSpinner.setVisibility(View.GONE);
+
+            // update under team domain
+            String team = EsaWeb.getTeam(url);
+            if (team != null) {
+                mUrlService.SetLatestUrl(url);
+
+                boolean shouldUpdateMenu = false;
+                if (mCurrentTeam == null || !mCurrentTeam.equals(team)) {
+                    mCurrentTeam = team;
+                    updateDrawerTitle(mCurrentTeam);
+                    shouldUpdateMenu = true;
+                }
+
+                Integer postId = EsaWeb.getPostId(url);
+                if (postId != null) {
+                    Boolean isBookMarked = mBookmarkService.Has(team, postId);
+                    menuBookmark.setVisible(true);
+                    menuBookmark.getIcon().setAlpha(isBookMarked? 255 : 128);
+
+                    String title = EsaWeb.getPostTitle(mWebView.getTitle());
+                    mHistoryService.Push(mCurrentTeam, new Post(postId, title));
+                    shouldUpdateMenu = true;
+                }
+
+                if (shouldUpdateMenu) {
+                    updateDrawerMenu();
+                }
+            }
+        }
+
+        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+            Log.d(TAG, "----- onReceivedError");
+        }
+
+        private boolean urlLoading(String url) {
+            if (!EsaWeb.isHost(url)) {
+                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(i);
+                return true;
+            }
+            return false;
+        }
+    };
 
 }

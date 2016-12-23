@@ -20,8 +20,7 @@ public class TeamHelper {
     private static final String TABLE_NAME = "teams";
 
     public static List<Team> getTeamList(final Context context) {
-        List<Team> list = new ArrayList<Team>();
-        Team Team = null;
+        List<Team> list = new ArrayList<>();
         Cursor c = null;
         DataSQLiteHelper DataHelper = null;
         try {
@@ -65,7 +64,6 @@ public class TeamHelper {
             boolean isResult = c.moveToFirst();
             if (isResult) {
                 team = new Team(c.getInt(0), c.getString(1));
-                isResult = c.moveToNext();
             }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
