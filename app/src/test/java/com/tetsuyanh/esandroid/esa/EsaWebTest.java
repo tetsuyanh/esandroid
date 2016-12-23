@@ -17,12 +17,12 @@ public class EsaWebTest {
     private final String URL_MYTEAMSUB_POST_10 = "https://myteam-sub.esa.io/posts/10";
 
     @Test
-    public void isHost() throws Exception {
-        assertEquals(true, EsaWeb.isHost(URL_ESA_ROOT));
-        assertEquals(true, EsaWeb.isHost(URL_MYTEAM_POST_10));
-        assertEquals(true, EsaWeb.isHost(URL_MYTEAM_POST_10_ANCHOR));
-        assertEquals(true, EsaWeb.isHost(URL_MYTEAMSUB_POST_10));
-        assertEquals(false, EsaWeb.isHost(URL_OTHER));
+    public void isInternal() throws Exception {
+        assertEquals(true, EsaWeb.isInternal(URL_ESA_ROOT));
+        assertEquals(true, EsaWeb.isInternal(URL_MYTEAM_POST_10));
+        assertEquals(true, EsaWeb.isInternal(URL_MYTEAM_POST_10_ANCHOR));
+        assertEquals(true, EsaWeb.isInternal(URL_MYTEAMSUB_POST_10));
+        assertEquals(false, EsaWeb.isInternal(URL_OTHER));
     }
 
     @Test

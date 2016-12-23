@@ -3,6 +3,10 @@ package com.tetsuyanh.esandroid.esa;
 import android.util.Log;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,21 +15,25 @@ import java.util.regex.Pattern;
  */
 
 public class EsaWeb {
+    public static final String URL_ROOT = "https://esa.io";
+
     private static final String TAG = EsaWeb.class.getSimpleName();
+    private static final Pattern sPatternHostALl= Pattern.compile("^([0-9a-z-.]*)esa.io$");
+    private static final Pattern sPatternHostTeam= Pattern.compile("^([0-9a-z-]+).esa.io$");
+    private static final Pattern sPatternPathPost = Pattern.compile("^/posts/([0-9]+)(#([0-9-])+)?$");
+    private static final String sPatternPostTitle = "^(.+) - [0-9a-z-]+.esa.io$";
+    private static final String sFormatPost = "https://%s.esa.io/posts/%d";
+    private static final Set<String> sDomainSetGoogleAuth = new HashSet<>(Arrays.asList(
+            "accounts.google.com",
+            "accounts.google.co.jp",
+            "accounts.youtube.com"
+    ));
 
-    public static final String DOMAIN = "esa.io";
-    public static final String URL_ROOT = "https://" + DOMAIN;
-
-    private static Pattern sPatternHostALl= Pattern.compile("^([0-9a-z-.]*)" + DOMAIN + "$");
-    private static Pattern sPatternHostTeam= Pattern.compile("^([0-9a-z-]+)." + DOMAIN + "$");
-    private static Pattern sPatternPathPost = Pattern.compile("^/posts/([0-9]+)(#([0-9-])+)?$");
-    private static final String sPatternPostTitle = "^(.+) - [0-9a-z-]+." + DOMAIN + "$";
-    private static final String sFormatPost = "https://%s." + DOMAIN + "/posts/%d";
-
-    public static boolean isHost(String urlString) {
+    public static boolean isInternal(String urlString) {
         try {
-            Matcher m = sPatternHostALl.matcher(new URL(urlString).getHost());
-            return m.matches();
+            String host = new URL(urlString).getHost();
+            Matcher m = sPatternHostALl.matcher(host);
+            return m.matches() || sDomainSetGoogleAuth.contains(host);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -53,13 +61,13 @@ public class EsaWeb {
     }
 
     public static String getPostUrl(String teamName, int postId) {
-        return String.format(sFormatPost, teamName, postId);
+        return String.format(Locale.JAPAN, sFormatPost, teamName, postId);
     }
 
     public static String getPostTitle(String pageTitle) {
         Pattern p = Pattern.compile(sPatternPostTitle);
         Matcher m = p.matcher(pageTitle);
-        return (m != null && m.find()) ? m.group(1) : null;
+        return m.find() ? m.group(1) : null;
     }
 
 }
