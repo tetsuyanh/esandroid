@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         private boolean urlLoading(String url) {
-            if (!EsaWeb.isHost(url)) {
+            if (!EsaWeb.isInternal(url)) {
                 Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(i);
                 return true;
