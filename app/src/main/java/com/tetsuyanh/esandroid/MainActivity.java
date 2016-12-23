@@ -9,7 +9,6 @@ import com.tetsuyanh.esandroid.service.UrlService;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -41,8 +40,7 @@ public class MainActivity extends AppCompatActivity
 
     private WebView mWebView;
     private View mLoadingSpinner;
-    private FloatingActionButton mFabAdd;
-    private FloatingActionButton mFabRemove;
+    private MenuItem menuBookmark;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,43 +59,6 @@ public class MainActivity extends AppCompatActivity
 
         // views
         mLoadingSpinner = findViewById(R.id.loading_spinner);
-        mFabAdd = (FloatingActionButton) findViewById(R.id.fab_add);
-        mFabRemove = (FloatingActionButton) findViewById(R.id.fab_remove);
-
-        // fab
-        mFabAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Integer postId = EsaWeb.GetPostId(mWebView.getUrl());
-                String title = EsaWeb.GetTitle(mWebView.getTitle());
-                if (postId != null) {
-                    if (mBookmarkService.Push(mCurrentTeam, new Post(postId, title))) {
-                        mFabAdd.setVisibility(View.GONE);
-                        mFabRemove.setVisibility(View.VISIBLE);
-                        updateDrawerMenu();
-                        showToast("(\\( ⁰⊖⁰ )/)");
-                    } else {
-                        showToast("failed");
-                    }
-                }
-            }
-        });
-        mFabRemove.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Integer postId = EsaWeb.GetPostId(mWebView.getUrl());
-                if (postId != null) {
-                    if (mBookmarkService.Pop(mCurrentTeam, postId)) {
-                        mFabRemove.setVisibility(View.GONE);
-                        mFabAdd.setVisibility(View.VISIBLE);
-                        updateDrawerMenu();
-                        showToast("──=≡=͟͟͞͞(\\( ⁰⊖⁰)/)");
-                    } else {
-                        showToast("failed");
-                    }
-                }
-            }
-        });
 
         // drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -151,8 +112,8 @@ public class MainActivity extends AppCompatActivity
             super.onPageStarted(view, url, favicon);
 
             mLoadingSpinner.setVisibility(View.VISIBLE);
-            mFabAdd.setVisibility(View.GONE);
-            mFabRemove.setVisibility(View.GONE);
+
+            if (menuBookmark != null) menuBookmark.setVisible(false);
         }
 
         @Override
@@ -176,8 +137,8 @@ public class MainActivity extends AppCompatActivity
                 Integer postId = EsaWeb.GetPostId(url);
                 if (postId != null) {
                     Boolean isBookMarked = mBookmarkService.Has(team, postId);
-                    mFabAdd.setVisibility(isBookMarked ? View.GONE : View.VISIBLE);
-                    mFabRemove.setVisibility(!isBookMarked ? View.GONE : View.VISIBLE);
+                    menuBookmark.setVisible(true);
+                    menuBookmark.getIcon().setAlpha(isBookMarked? 255 : 128);
 
                     String title = EsaWeb.GetTitle(mWebView.getTitle());
                     mHistoryService.Push(mCurrentTeam, new Post(postId, title));
@@ -213,20 +174,41 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        menuBookmark = menu.findItem(R.id.action_bookmark);
+
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_reload) {
-            mWebView.reload();
-            return true;
+        if (id == R.id.action_bookmark) {
+            if (item.getIcon().getAlpha() == 128) {
+                Integer postId = EsaWeb.GetPostId(mWebView.getUrl());
+                String title = EsaWeb.GetTitle(mWebView.getTitle());
+                if (postId != null) {
+                    if (mBookmarkService.Push(mCurrentTeam, new Post(postId, title))) {
+                        updateDrawerMenu();
+                        showToast("(\\( ⁰⊖⁰ )/)");
+                        item.getIcon().setAlpha(255);
+                    } else {
+                        showToast("failed");
+                    }
+                }
+            } else {
+                Integer postId = EsaWeb.GetPostId(mWebView.getUrl());
+                if (postId != null) {
+                    if (mBookmarkService.Pop(mCurrentTeam, postId)) {
+                        updateDrawerMenu();
+                        showToast("──=≡=͟͟͞͞(\\( ⁰⊖⁰)/)");
+                        item.getIcon().setAlpha(128);
+                    } else {
+                        showToast("failed");
+                    }
+                }
+            }
         }
 
         return super.onOptionsItemSelected(item);

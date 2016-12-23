@@ -4,7 +4,7 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <string name="action_reload">Reload</string>
+    <string name="action_bookmark">Bookmark</string>
 
     <string name="drawer_bookmarks">Bookmarks</string>
     <string name="drawer_histories">Histories</string>
