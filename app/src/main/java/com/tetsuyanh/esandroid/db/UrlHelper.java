@@ -30,7 +30,6 @@ public class UrlHelper {
             boolean isResult = c.moveToFirst();
             if (isResult) {
                 url = new Url(c.getString(0), c.getString(1));
-                isResult = c.moveToNext();
             }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());

@@ -21,6 +21,10 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.tetsuyanh.esandroid", appContext.getPackageName());
+        if (BuildConfig.IS_DEBUG) {
+            assertEquals("com.tetsuyanh.esandroid.debug", appContext.getPackageName());
+        } else {
+            assertEquals("com.tetsuyanh.esandroid", appContext.getPackageName());
+        }
     }
 }

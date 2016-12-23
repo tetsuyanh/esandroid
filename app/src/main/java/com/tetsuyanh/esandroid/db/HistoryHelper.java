@@ -95,7 +95,7 @@ public class HistoryHelper {
 
     public static long delete(final Context context, final Integer teamId, final Integer postId) {
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
-        int result = mHelper.mDb.delete(TABLE_NAME, "post_id = ?", new String[]{postId.toString()});
+        int result = mHelper.mDb.delete(TABLE_NAME, "team_id = ? and post_id = ?", new String[]{teamId.toString(), postId.toString()});
         mHelper.cleanup();
         return result;
     }
