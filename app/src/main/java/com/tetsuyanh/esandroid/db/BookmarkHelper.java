@@ -19,7 +19,7 @@ public class BookmarkHelper {
     private static final String TAG = BookmarkHelper.class.getSimpleName();
     private static final String TABLE_NAME = "bookmarks";
 
-    public static List<Post> getBookmarkList(final Context context, final Integer teamId) {
+    public static List<Post> getList(final Context context, final Integer teamId) {
         // must return array instance
         List<Post> list = new ArrayList<Post>();
         Cursor c = null;
@@ -64,7 +64,7 @@ public class BookmarkHelper {
 
     public static long delete(final Context context, final Integer teamId, final Integer postId) {
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
-        int result = mHelper.mDb.delete(TABLE_NAME, "team_id and post_id = ?", new String[]{teamId.toString(), postId.toString()});
+        int result = mHelper.mDb.delete(TABLE_NAME, "team_id = ? and post_id = ?", new String[]{teamId.toString(), postId.toString()});
         mHelper.cleanup();
         return result;
     }

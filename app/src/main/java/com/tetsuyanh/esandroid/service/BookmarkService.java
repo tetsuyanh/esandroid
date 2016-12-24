@@ -49,7 +49,7 @@ public class BookmarkService {
             clearList(teamName);
             return true;
         } else {
-            Log.e(TAG, "failed to insert history");
+            Log.e(TAG, "failed to insert post");
             return false;
         }
     }
@@ -61,7 +61,7 @@ public class BookmarkService {
             clearList(team);
             return true;
         } else {
-            Log.e(TAG, "failed to delete history");
+            Log.e(TAG, "failed to delete post");
             return false;
         }
     }
@@ -69,7 +69,7 @@ public class BookmarkService {
     private List<Post> getList(String teamName) {
 List<Post> list = mTeamPostList.get(teamName);
         if (list == null) {
-            list = BookmarkHelper.getBookmarkList(mContext, mTeamManager.getTeamId(teamName));
+            list = BookmarkHelper.getList(mContext, mTeamManager.getTeamId(teamName));
             mTeamPostList.put(teamName, list);
         }
         return list;

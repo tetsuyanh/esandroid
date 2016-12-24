@@ -65,7 +65,7 @@ public class HistoryService {
         List<Post> list = getList(team);
         int index = list.indexOf(new Post(postId, null));
         if (index == -1) {
-            Log.e(TAG, "not found history");
+            Log.e(TAG, "not found post");
             return false;
         }
 
@@ -75,7 +75,7 @@ public class HistoryService {
             clearList(team);
             return true;
         } else {
-            Log.e(TAG, "failed to delete history");
+            Log.e(TAG, "failed to delete post");
             return false;
         }
     }
