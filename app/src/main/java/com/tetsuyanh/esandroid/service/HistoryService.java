@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.tetsuyanh.esandroid.db.HistoryHelper;
 import com.tetsuyanh.esandroid.entity.Post;
-import com.tetsuyanh.esandroid.entity.Team;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,12 +19,10 @@ public class HistoryService {
     private static final Integer HISTORY_SIZE = 3;
 
     private Context mContext;
-    private TeamManager mTeamManager;
     private Map<String, List<Post>> mTeamPostList;
 
     public HistoryService(Context context) {
         mContext = context;
-        mTeamManager = TeamManager.GetInstance(context);
         mTeamPostList = new HashMap<>();
     }
 
@@ -33,26 +30,26 @@ public class HistoryService {
         return getList(team);
     }
 
-    public boolean Push(String team, Post post) {
-        List<Post> list = getList(team);
+    public boolean Push(String teamName, Post post) {
+        List<Post> list = getList(teamName);
         // even if it fails on the way, remove first so as not to exceed the size
         if (list.contains(post)) {
             // remove same history if list already had
-            if (Pop(team, post.GetId()) == false) {
+            if (!pop(teamName, post.getId())) {
                 Log.e(TAG, "failed to pop previous same history");
                 return false;
             }
         } else if (list.size() == HISTORY_SIZE) {
             // remove the oldest history if list size will be exceeded
-            if (Pop(team, list.get(HISTORY_SIZE - 1).GetId()) == false) {
+            if (!pop(teamName, list.get(HISTORY_SIZE - 1).getId())) {
                 Log.e(TAG, "failed to remove the oldest hitstory");
                 return false;
             }
         }
 
-        if (HistoryHelper.insert(mContext, mTeamManager.getTeamId(team), post) != -1) {
+        if (HistoryHelper.insert(mContext, teamName, post) != -1) {
             list.add(post);
-            clearList(team);
+            clearList(teamName);
             return true;
         } else {
             Log.e(TAG, "failed to insert history");
@@ -60,17 +57,17 @@ public class HistoryService {
         }
     }
 
-    public boolean Pop(String team, Integer postId) {
-        List<Post> list = getList(team);
+    private boolean pop(String teamName, Integer postId) {
+        List<Post> list = getList(teamName);
         int index = list.indexOf(new Post(postId, null));
         if (index == -1) {
             Log.e(TAG, "not found post");
             return false;
         }
 
-        if (HistoryHelper.delete(mContext, mTeamManager.getTeamId(team), postId) == 1) {
+        if (HistoryHelper.delete(mContext, teamName, postId) == 1) {
             list.remove(index);
-            clearList(team);
+            clearList(teamName);
             return true;
         } else {
             Log.e(TAG, "failed to delete post");
@@ -81,7 +78,7 @@ public class HistoryService {
     private List<Post> getList(String teamName) {
         List<Post> list = mTeamPostList.get(teamName);
         if (list == null) {
-            list = HistoryHelper.getList(mContext, mTeamManager.getTeamId(teamName));
+            list = HistoryHelper.getList(mContext, teamName);
             mTeamPostList.put(teamName, list);
         }
         return list;

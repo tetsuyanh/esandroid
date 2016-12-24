@@ -19,7 +19,7 @@ public class BookmarkHelper {
     private static final String TAG = BookmarkHelper.class.getSimpleName();
     private static final String TABLE_NAME = "bookmarks";
 
-    public static List<Post> getList(final Context context, final Integer teamId) {
+    public static List<Post> getList(final Context context, final String teamName) {
         // must return array instance
         List<Post> list = new ArrayList<>();
         Cursor c = null;
@@ -27,11 +27,11 @@ public class BookmarkHelper {
         try {
             mHelper = new DataSQLiteHelper(context);
 
-            String sql = "select post_id, title from bookmarks where team_id = ? order by title";
+            String sql = "select post_id, title from bookmarks where team_name = ? order by title";
             if (BuildConfig.IS_DEBUG) {
                 Log.d(TAG, "sql:" + sql);
             }
-            c = mHelper.mDb.rawQuery(sql, new String[]{teamId.toString()});
+            c = mHelper.mDb.rawQuery(sql, new String[]{teamName});
             boolean isResult = c.moveToFirst();
             while (isResult) {
                 Post post = new Post(c.getInt(0), c.getString(1));
@@ -51,11 +51,11 @@ public class BookmarkHelper {
         return list;
     }
 
-    public static long insert(final Context context, final Integer teamId, final Post post) {
+    public static long insert(final Context context, final String teamName, final Post post) {
         ContentValues values = new ContentValues();
-        values.put("post_id", post.GetId());
-        values.put("team_id", teamId);
-        values.put("title", post.GetTitle());
+        values.put("post_id", post.getId());
+        values.put("team_name", teamName);
+        values.put("title", post.getTitle());
         values.put("created_at", (int)System.currentTimeMillis());
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
         long result = mHelper.mDb.insert(TABLE_NAME, null, values);
@@ -63,9 +63,9 @@ public class BookmarkHelper {
         return result;
     }
 
-    public static long delete(final Context context, final Integer teamId, final Integer postId) {
+    public static long delete(final Context context, final String teamName, final Integer postId) {
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
-        int result = mHelper.mDb.delete(TABLE_NAME, "team_id = ? and post_id = ?", new String[]{teamId.toString(), postId.toString()});
+        int result = mHelper.mDb.delete(TABLE_NAME, "team_name = ? and post_id = ?", new String[]{teamName, postId.toString()});
         mHelper.cleanup();
         return result;
     }

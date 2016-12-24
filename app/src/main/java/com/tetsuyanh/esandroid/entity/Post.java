@@ -13,11 +13,11 @@ public class Post {
         this.title = title;
     }
 
-    public Integer GetId() {
+    public Integer getId() {
         return id;
     }
 
-    public String GetTitle() {
+    public String getTitle() {
         return title;
     }
 

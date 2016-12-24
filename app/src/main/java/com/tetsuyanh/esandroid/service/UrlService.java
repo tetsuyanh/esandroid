@@ -17,17 +17,16 @@ public class UrlService {
         mContext = context;
     }
 
-    public String GetLatestUrl() {
-        Url url = UrlHelper.get(mContext, URL_KEY_LATEST);
-        return url != null ? url.GetUrl() : null;
+    public Url getLatestUrl(String teamName) {
+        return UrlHelper.get(mContext, teamName, URL_KEY_LATEST);
     }
 
-    public boolean SetLatestUrl(String url) {
-        String current = GetLatestUrl();
-        if (current == null) {
-            return UrlHelper.insert(mContext, URL_KEY_LATEST, url) != -1;
-        } else if (!current.equals(url)) {
-            return UrlHelper.update(mContext, URL_KEY_LATEST, url) == 1;
+    public boolean setLatestUrl(String teamName, String url) {
+        Url u = getLatestUrl(teamName);
+        if (u == null) {
+            return UrlHelper.insert(mContext, teamName, URL_KEY_LATEST, url) != -1;
+        } else if (!u.getUrl().equals(url)) {
+            return UrlHelper.update(mContext, teamName, URL_KEY_LATEST, url) == 1;
         } else {
             return true;
         }
