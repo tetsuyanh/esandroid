@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class HistoryService {
     private static final String TAG = HistoryService.class.getSimpleName();
-    private static final Integer HISTORY_SIZE = 3;
+    private static final Integer HISTORY_SIZE = 20;
 
     private Context mContext;
     private Map<String, List<Post>> mTeamPostList;

@@ -16,7 +16,7 @@ import java.util.Map;
 
 public class BookmarkService {
     private static final String TAG = BookmarkService.class.getSimpleName();
-    private static final Integer BOOKMARK_SIZE = 3;
+    private static final Integer BOOKMARK_SIZE = 20;
 
     private Context mContext;
     private Map<String, List<Post>> mTeamPostList;
