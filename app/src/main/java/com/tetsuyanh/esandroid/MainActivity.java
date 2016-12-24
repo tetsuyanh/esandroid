@@ -32,6 +32,7 @@ import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.nio.charset.Charset;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -193,20 +194,52 @@ public class MainActivity extends AppCompatActivity
         if (bookmarks != null && bookmarks.size() > 0) {
             Menu menuBookmarks = menu.addSubMenu(R.string.drawer_bookmarks);
             for (Post p : bookmarks) {
-                menuBookmarks.add(p.GetId() + ":" + p.GetTitle());
+                menuBookmarks.add(p.GetId() + ":" + omitTitle(p.GetTitle()));
             }
         }
 
         List<Post> histories = mHistoryService.GetList(mCurrentTeam);
         Menu menuHistories = menu.addSubMenu(R.string.drawer_histories);
         for(Post p: histories) {
-            menuHistories.add(p.GetId() + ":" + p.GetTitle());
+            menuHistories.add(p.GetId() + ":" + omitTitle(p.GetTitle()));
         }
     }
 
     private void showToast(String message) {
         Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
         toast.show();
+    }
+
+    private String omitTitle(String title) {
+        String[] layers = title.split("/");
+        int length = layers.length;
+        if (length == 1) {
+            if (title.getBytes(Charset.forName("Shift_JIS")).length > 24) {
+                return title.substring(0, 12);
+            } else {
+                return title;
+            }
+        } else {
+            StringBuilder sb = new StringBuilder();
+            String top = layers[0];
+            if (top.getBytes(Charset.forName("Shift_JIS")).length > 12) {
+                sb.append(top.substring(0, 6) + "...");
+            } else {
+                sb.append(top);
+            }
+            if (length == 2) {
+                sb.append("/");
+            } else {
+                sb.append("/.../");
+            }
+            String end = layers[length-1];
+            if (end.getBytes(Charset.forName("Shift_JIS")).length > 12) {
+                sb.append(end.substring(0, 6) + "...");
+            } else {
+                sb.append(end);
+            }
+            return sb.toString();
+        }
     }
 
     /** WebViewClientクラス */
