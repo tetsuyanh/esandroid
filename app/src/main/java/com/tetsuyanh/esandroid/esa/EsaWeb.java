@@ -18,10 +18,10 @@ public class EsaWeb {
     public static final String URL_ROOT = "https://esa.io";
 
     private static final String TAG = EsaWeb.class.getSimpleName();
-    private static final Pattern sPatternHostALl= Pattern.compile("^([0-9a-z-.]*)esa.io$");
-    private static final Pattern sPatternHostTeam= Pattern.compile("^([0-9a-z-]+).esa.io$");
+    private static final Pattern sPatternHostALl = Pattern.compile("^([0-9a-z-.]*)esa.io$");
+    private static final Pattern sPatternHostTeam = Pattern.compile("^([0-9a-z-]+).esa.io$");
     private static final Pattern sPatternPathPost = Pattern.compile("^/posts/([0-9]+)(#([0-9-])+)?$");
-    private static final String sPatternPostTitle = "^(.+) - [0-9a-z-]+.esa.io$";
+    private static final String sPatternPostTitle = "^(\\[WIP\\] )?(.+) - [0-9a-z-]+.esa.io$";
     private static final String sFormatPost = "https://%s.esa.io/posts/%d";
     private static final Set<String> sDomainSetGoogleAuth = new HashSet<>(Arrays.asList(
             "accounts.google.com",
@@ -67,7 +67,7 @@ public class EsaWeb {
     public static String getPostTitle(String pageTitle) {
         Pattern p = Pattern.compile(sPatternPostTitle);
         Matcher m = p.matcher(pageTitle);
-        return m.find() ? m.group(1) : null;
+        return m.find() ? m.group(2) : null;
     }
 
 }

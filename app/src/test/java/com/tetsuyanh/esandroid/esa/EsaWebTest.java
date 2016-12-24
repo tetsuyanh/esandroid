@@ -50,7 +50,9 @@ public class EsaWebTest {
 
     @Test
     public void getPostTitle() throws Exception {
-        assertEquals("text", EsaWeb.getPostTitle("text - myteam.esa.io"));
+        assertEquals("title", EsaWeb.getPostTitle("title - myteam.esa.io"));
+        assertEquals("title", EsaWeb.getPostTitle("[WIP] title - myteam.esa.io"));
+        assertEquals("dir/title", EsaWeb.getPostTitle("dir/title - myteam.esa.io"));
     }
 
 }
