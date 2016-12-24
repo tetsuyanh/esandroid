@@ -1,5 +1,6 @@
 package com.tetsuyanh.esandroid;
 
+import com.tetsuyanh.esandroid.entity.Url;
 import com.tetsuyanh.esandroid.esa.EsaWeb;
 import com.tetsuyanh.esandroid.entity.Post;
 import com.tetsuyanh.esandroid.service.BookmarkService;
@@ -82,11 +83,13 @@ public class MainActivity extends AppCompatActivity
         mWebView = (WebView) findViewById(R.id.webview);
         mWebView.setWebViewClient(mWebViewClient);
         mWebView.getSettings().setJavaScriptEnabled(true);
-        String url = mUrlService.GetLatestUrl();
-        if (url == null) {
-            url = EsaWeb.URL_ROOT;
+        Url url = mUrlService.getLatestUrl(null);
+        if (url != null) {
+            mCurrentTeam = url.getTeamName();
+            mWebView.loadUrl(url.getUrl());
+        } else {
+            mWebView.loadUrl(EsaWeb.URL_ROOT);
         }
-        mWebView.loadUrl(url);
     }
 
     @Override
@@ -194,14 +197,14 @@ public class MainActivity extends AppCompatActivity
         if (bookmarks != null && bookmarks.size() > 0) {
             Menu menuBookmarks = menu.addSubMenu(R.string.drawer_bookmarks);
             for (Post p : bookmarks) {
-                menuBookmarks.add(p.GetId() + ":" + omitTitle(p.GetTitle()));
+                menuBookmarks.add(p.getId() + ":" + omitTitle(p.getTitle()));
             }
         }
 
         List<Post> histories = mHistoryService.GetList(mCurrentTeam);
         Menu menuHistories = menu.addSubMenu(R.string.drawer_histories);
         for(Post p: histories) {
-            menuHistories.add(p.GetId() + ":" + omitTitle(p.GetTitle()));
+            menuHistories.add(p.getId() + ":" + omitTitle(p.getTitle()));
         }
     }
 
@@ -223,7 +226,7 @@ public class MainActivity extends AppCompatActivity
             StringBuilder sb = new StringBuilder();
             String top = layers[0];
             if (top.getBytes(Charset.forName("Shift_JIS")).length > 12) {
-                sb.append(top.substring(0, 6) + "...");
+                sb.append(top.substring(0, 6)).append("...");
             } else {
                 sb.append(top);
             }
@@ -234,7 +237,7 @@ public class MainActivity extends AppCompatActivity
             }
             String end = layers[length-1];
             if (end.getBytes(Charset.forName("Shift_JIS")).length > 12) {
-                sb.append(end.substring(0, 6) + "...");
+                sb.append(end.substring(0, 6)).append("...");
             } else {
                 sb.append(end);
             }
@@ -275,14 +278,7 @@ public class MainActivity extends AppCompatActivity
             // update under team domain
             String team = EsaWeb.getTeam(url);
             if (team != null) {
-                mUrlService.SetLatestUrl(url);
-
-                boolean shouldUpdateMenu = false;
-                if (mCurrentTeam == null || !mCurrentTeam.equals(team)) {
-                    mCurrentTeam = team;
-                    updateDrawerTitle(mCurrentTeam);
-                    shouldUpdateMenu = true;
-                }
+                mUrlService.setLatestUrl(team, url);
 
                 Integer postId = EsaWeb.getPostId(url);
                 if (postId != null) {
@@ -291,11 +287,7 @@ public class MainActivity extends AppCompatActivity
                     menuBookmark.getIcon().setAlpha(isBookMarked? 255 : 128);
 
                     String title = EsaWeb.getPostTitle(mWebView.getTitle());
-                    mHistoryService.Push(mCurrentTeam, new Post(postId, title));
-                    shouldUpdateMenu = true;
-                }
-
-                if (shouldUpdateMenu) {
+                    mHistoryService.Push(team, new Post(postId, title));
                     updateDrawerMenu();
                 }
             }
@@ -306,10 +298,25 @@ public class MainActivity extends AppCompatActivity
         }
 
         private boolean urlLoading(String url) {
+            // open external web page in browser app
             if (!EsaWeb.isInternal(url)) {
                 Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(i);
                 return true;
+            }
+            String team = EsaWeb.getTeam(url);
+            if (team != null && !team.equals(mCurrentTeam)) {
+                // change team
+                mCurrentTeam = team;
+                updateDrawerTitle(mCurrentTeam);
+                updateDrawerMenu();
+                // reload the latest url of next team if it existed
+                Url urlLatest = mUrlService.getLatestUrl(mCurrentTeam);
+                if (urlLatest != null) {
+                    updateDrawerMenu();
+                    mWebView.loadUrl(urlLatest.getUrl());
+                    return true;
+                }
             }
             return false;
         }

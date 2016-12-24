@@ -5,7 +5,6 @@ import android.util.Log;
 
 import com.tetsuyanh.esandroid.db.BookmarkHelper;
 import com.tetsuyanh.esandroid.entity.Post;
-import com.tetsuyanh.esandroid.entity.Team;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,15 +16,13 @@ import java.util.Map;
 
 public class BookmarkService {
     private static final String TAG = BookmarkService.class.getSimpleName();
-    private static final Integer BOOKMARK_SIZE = 3;
+    private static final Integer BOOKMARK_SIZE = 20;
 
     private Context mContext;
-    private TeamManager mTeamManager;
     private Map<String, List<Post>> mTeamPostList;
 
     public BookmarkService(Context context) {
         mContext = context;
-        mTeamManager = TeamManager.GetInstance(context);
         mTeamPostList = new HashMap<>();
     }
 
@@ -44,7 +41,7 @@ public class BookmarkService {
             return false;
         }
 
-        if (BookmarkHelper.insert(mContext, mTeamManager.getTeamId(teamName), post) != -1) {
+        if (BookmarkHelper.insert(mContext, teamName, post) != -1) {
             list.add(post);
             clearList(teamName);
             return true;
@@ -54,11 +51,11 @@ public class BookmarkService {
         }
     }
 
-    public boolean Pop(String team, Integer postId) {
-        List<Post> list = getList(team);
-        if (BookmarkHelper.delete(mContext, mTeamManager.getTeamId(team), postId) == 1) {
+    public boolean Pop(String teamName, Integer postId) {
+        List<Post> list = getList(teamName);
+        if (BookmarkHelper.delete(mContext, teamName, postId) == 1) {
             list.remove(new Post(postId, null));
-            clearList(team);
+            clearList(teamName);
             return true;
         } else {
             Log.e(TAG, "failed to delete post");
@@ -69,7 +66,7 @@ public class BookmarkService {
     private List<Post> getList(String teamName) {
         List<Post> list = mTeamPostList.get(teamName);
         if (list == null) {
-            list = BookmarkHelper.getList(mContext, mTeamManager.getTeamId(teamName));
+            list = BookmarkHelper.getList(mContext, teamName);
             mTeamPostList.put(teamName, list);
         }
         return list;

@@ -5,15 +5,21 @@ package com.tetsuyanh.esandroid.entity;
  */
 
 public class Url {
+    private final String teamName;
     private final String key;
     private final String url;
 
-    public Url(String key, String url) {
+    public Url(String teamName, String key, String url) {
+        this.teamName = teamName;
         this.key = key;
         this.url = url;
     }
 
-    public String GetUrl() {
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public String getUrl() {
         return url;
     }
 }

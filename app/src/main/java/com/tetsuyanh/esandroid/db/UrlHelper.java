@@ -16,20 +16,28 @@ public class UrlHelper {
     private static final String TAG = UrlHelper.class.getSimpleName();
     private static final String TABLE_NAME = "urls";
 
-    public static Url get(final Context context, final String key) {
+    public static Url get(final Context context, final String teamName, final String key) {
         Url url = null;
         Cursor c = null;
         DataSQLiteHelper mHelper = null;
         try {
             mHelper = new DataSQLiteHelper(context);
-            String sql = "select key, url from urls where key = ?";
+            String sql;
+            String[] args;
+            if (teamName == null) {
+                sql = "select team_name, key, url from urls where key = ?";
+                args = new String[]{key};
+            } else {
+                sql = "select team_name, key, url from urls where team_name = ? and key = ?";
+                args = new String[]{teamName, key};
+            }
             if (BuildConfig.IS_DEBUG) {
                 Log.d(TAG, "sql:" + sql);
             }
-            c = mHelper.mDb.rawQuery(sql, new String[]{key});
+            c = mHelper.mDb.rawQuery(sql, args);
             boolean isResult = c.moveToFirst();
             if (isResult) {
-                url = new Url(c.getString(0), c.getString(1));
+                url = new Url(c.getString(0), c.getString(1), c.getString(2));
             }
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
@@ -44,8 +52,9 @@ public class UrlHelper {
         return url;
     }
 
-    public static long insert(final Context context, final String key, final String url) {
+    public static long insert(final Context context, final String teamName, final String key, final String url) {
         ContentValues values = new ContentValues();
+        values.put("team_name", teamName);
         values.put("key", key);
         values.put("url", url);
         values.put("created_at", (int)System.currentTimeMillis());
@@ -55,12 +64,12 @@ public class UrlHelper {
         return result;
     }
 
-    public static long update(final Context context, final String key, final String url) {
+    public static long update(final Context context, final String teamName, final String key, final String url) {
         ContentValues values = new ContentValues();
         values.put("url", url);
         values.put("updated_at", (int)System.currentTimeMillis());
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
-        long result = mHelper.mDb.update(TABLE_NAME, values, "key = ?", new String[]{key});
+        long result = mHelper.mDb.update(TABLE_NAME, values, "team_name = ? and key = ?", new String[]{teamName, key});
         mHelper.cleanup();
         return result;
     }

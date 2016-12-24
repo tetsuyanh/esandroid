@@ -13,16 +13,11 @@ public class Team {
         this.name = name;
     }
 
-    public Team(String name) {
-        this.id = -1;
-        this.name = name;
-    }
-
-    public Integer GetId() {
+    public Integer getId() {
         return id;
     }
 
-    public String GetName() {
+    public String getName() {
         return name;
     }
 
