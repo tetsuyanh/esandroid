@@ -7,6 +7,10 @@
             android:icon="@drawable/ic_menu_bookmark"
             android:title="@string/drawer_bookmark" />
         <item
+            android:id="@+id/nav_lock"
+            android:icon="@drawable/ic_menu_lock"
+            android:title="Lock" />
+        <item
             android:id="@+id/nav_history"
             android:icon="@drawable/ic_menu_history"
             android:title="History" />

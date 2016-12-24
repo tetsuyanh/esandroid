@@ -15,15 +15,17 @@ import com.tetsuyanh.esandroid.R;
 import com.tetsuyanh.esandroid.entity.Post;
 import com.tetsuyanh.esandroid.service.BookmarkService;
 import com.tetsuyanh.esandroid.service.HistoryService;
+import com.tetsuyanh.esandroid.service.LockService;
 
 import java.util.List;
 
 public class PostListFragment extends Fragment {
     private static final String TAG = PostListFragment.class.getSimpleName();
     public enum Kind {
-        UNDEFINED(0),
-        BOOKMARK(1),
-        HISTORY(2);
+        KIND_UNDEFINED(0),
+        KIND_BOOKMARK(1),
+        KIND_LOCK(2),
+        KIND_HISTORY(3);
 
         private final int id;
         Kind(final int id) {
@@ -48,6 +50,7 @@ public class PostListFragment extends Fragment {
     private OnPostListFragmentInteractionListener mListener;
 
     private BookmarkService mBookmarkService;
+    private LockService mLockService;
     private HistoryService mHistoryService;
     private PostListDivider mDivider;
 
@@ -61,6 +64,7 @@ public class PostListFragment extends Fragment {
 
         Context context = getActivity().getApplicationContext();
         mBookmarkService = new BookmarkService(context);
+        mLockService = new LockService(context);
         mHistoryService = new HistoryService(context);
         mDivider = new PostListDivider(context);
 
@@ -77,15 +81,18 @@ public class PostListFragment extends Fragment {
 
         List<Post> list = null;
         switch (mKind) {
-            case BOOKMARK:
+            case KIND_BOOKMARK:
                 list = mBookmarkService.getList(mTeam);
                 break;
-            case HISTORY:
+            case KIND_LOCK:
+                list = mLockService.getList(mTeam);
+                break;
+            case KIND_HISTORY:
                 list = mHistoryService.getList(mTeam);
                 break;
         }
 
-        if (mKind != Kind.UNDEFINED && recyclerView != null && list != null && list.size() > 0) {
+        if (mKind != Kind.KIND_UNDEFINED && recyclerView != null && list != null && list.size() > 0) {
             Context context = recyclerView.getContext();
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
             recyclerView.setAdapter(new PostListRecyclerViewAdapter(list, mListener));

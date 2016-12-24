@@ -3,6 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_lock"
+        android:icon="@drawable/ic_action_lock_closed"
+        android:title="@string/action_lock"
+        android:visible="false"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/action_bookmark"
         android:icon="@drawable/ic_action_bookmark"
         android:title="@string/action_bookmark"

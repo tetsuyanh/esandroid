@@ -6,5 +6,6 @@
     <item name="ic_menu_share" type="drawable">@android:drawable/ic_menu_share</item>
     <item name="ic_menu_send" type="drawable">@android:drawable/ic_menu_send</item>
     <item name="ic_menu_bookmark" type="drawable">@drawable/ic_action_bookmark</item>
+    <item name="ic_menu_lock" type="drawable">@android:drawable/ic_menu_directions</item>
     <item name="ic_menu_history" type="drawable">@android:drawable/ic_menu_recent_history</item>
 </resources>
