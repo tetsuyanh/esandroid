@@ -19,7 +19,7 @@ public class TeamHelper {
     private static final String TAG = TeamHelper.class.getSimpleName();
     private static final String TABLE_NAME = "teams";
 
-    public static List<Team> getTeamList(final Context context) {
+    public static List<Team> getList(final Context context) {
         List<Team> list = new ArrayList<>();
         Cursor c = null;
         DataSQLiteHelper DataHelper = null;
@@ -50,7 +50,7 @@ public class TeamHelper {
         return list;
     }
 
-    public static Team getTeam(final Context context, final String name) {
+    public static Team get(final Context context, final String name) {
         Team team = null;
         Cursor c = null;
         DataSQLiteHelper DataHelper = null;
@@ -81,6 +81,7 @@ public class TeamHelper {
     public static long insert(final Context context, final String name) {
         ContentValues values = new ContentValues();
         values.put("name", name);
+        values.put("created_at", (int)System.currentTimeMillis());
         DataSQLiteHelper DataHelper = new DataSQLiteHelper(context);
         long result = DataHelper.mDb.insert(TABLE_NAME, null, values);
         DataHelper.cleanup();

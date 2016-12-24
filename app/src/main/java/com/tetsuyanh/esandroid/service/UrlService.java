@@ -18,7 +18,7 @@ public class UrlService {
     }
 
     public String GetLatestUrl() {
-        Url url = UrlHelper.getUrl(mContext, URL_KEY_LATEST);
+        Url url = UrlHelper.get(mContext, URL_KEY_LATEST);
         return url != null ? url.GetUrl() : null;
     }
 

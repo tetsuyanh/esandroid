@@ -67,7 +67,7 @@ public class BookmarkService {
     }
 
     private List<Post> getList(String teamName) {
-List<Post> list = mTeamPostList.get(teamName);
+        List<Post> list = mTeamPostList.get(teamName);
         if (list == null) {
             list = BookmarkHelper.getList(mContext, mTeamManager.getTeamId(teamName));
             mTeamPostList.put(teamName, list);

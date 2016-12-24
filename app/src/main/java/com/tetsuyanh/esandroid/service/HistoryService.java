@@ -52,7 +52,6 @@ public class HistoryService {
 
         if (HistoryHelper.insert(mContext, mTeamManager.getTeamId(team), post) != -1) {
             list.add(post);
-            //mIsUpdated = true;
             clearList(team);
             return true;
         } else {
@@ -71,7 +70,6 @@ public class HistoryService {
 
         if (HistoryHelper.delete(mContext, mTeamManager.getTeamId(team), postId) == 1) {
             list.remove(index);
-            //mIsUpdated = true;
             clearList(team);
             return true;
         } else {
@@ -83,7 +81,7 @@ public class HistoryService {
     private List<Post> getList(String teamName) {
         List<Post> list = mTeamPostList.get(teamName);
         if (list == null) {
-            list = HistoryHelper.getHistoryList(mContext, mTeamManager.getTeamId(teamName));
+            list = HistoryHelper.getList(mContext, mTeamManager.getTeamId(teamName));
             mTeamPostList.put(teamName, list);
         }
         return list;

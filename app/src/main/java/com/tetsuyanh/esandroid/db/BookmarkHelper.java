@@ -21,7 +21,7 @@ public class BookmarkHelper {
 
     public static List<Post> getList(final Context context, final Integer teamId) {
         // must return array instance
-        List<Post> list = new ArrayList<Post>();
+        List<Post> list = new ArrayList<>();
         Cursor c = null;
         DataSQLiteHelper mHelper = null;
         try {
@@ -56,6 +56,7 @@ public class BookmarkHelper {
         values.put("post_id", post.GetId());
         values.put("team_id", teamId);
         values.put("title", post.GetTitle());
+        values.put("created_at", (int)System.currentTimeMillis());
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
         long result = mHelper.mDb.insert(TABLE_NAME, null, values);
         mHelper.cleanup();

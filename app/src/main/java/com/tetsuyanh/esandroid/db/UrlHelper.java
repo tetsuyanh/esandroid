@@ -16,7 +16,7 @@ public class UrlHelper {
     private static final String TAG = UrlHelper.class.getSimpleName();
     private static final String TABLE_NAME = "urls";
 
-    public static Url getUrl(final Context context, final String key) {
+    public static Url get(final Context context, final String key) {
         Url url = null;
         Cursor c = null;
         DataSQLiteHelper mHelper = null;
@@ -48,6 +48,7 @@ public class UrlHelper {
         ContentValues values = new ContentValues();
         values.put("key", key);
         values.put("url", url);
+        values.put("created_at", (int)System.currentTimeMillis());
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
         long result = mHelper.mDb.insert(TABLE_NAME, null, values);
         mHelper.cleanup();
@@ -57,6 +58,7 @@ public class UrlHelper {
     public static long update(final Context context, final String key, final String url) {
         ContentValues values = new ContentValues();
         values.put("url", url);
+        values.put("updated_at", (int)System.currentTimeMillis());
         DataSQLiteHelper mHelper = new DataSQLiteHelper(context);
         long result = mHelper.mDb.update(TABLE_NAME, values, "key = ?", new String[]{key});
         mHelper.cleanup();

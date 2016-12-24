@@ -19,7 +19,7 @@ public class HistoryHelper {
     private static final String TAG = HistoryHelper.class.getSimpleName();
     private static final String TABLE_NAME = "histories";
 
-    public static List<Post> getHistoryList(final Context context, final Integer teamId) {
+    public static List<Post> getList(final Context context, final Integer teamId) {
         // must return array instance
         List<Post> list = new ArrayList<Post>();
         Post Post = null;
@@ -52,7 +52,7 @@ public class HistoryHelper {
         return list;
     }
 
-    public static Post getHistory(final Context context, final Integer teamId, final Integer postId) {
+    public static Post get(final Context context, final Integer teamId, final Integer postId) {
         Post post = null;
         Cursor c = null;
         DataSQLiteHelper mHelper = null;

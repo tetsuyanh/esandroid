@@ -35,7 +35,7 @@ public class TeamManager {
         Integer teamId = mTeamIdSet.get(teamName);
         if (teamId == null) {
             Log.d(TAG, "**** getTeamId from db");
-            Team team = TeamHelper.getTeam(mContext, teamName);
+            Team team = TeamHelper.get(mContext, teamName);
             if (team != null) {
                 Log.d(TAG, "***** team found");
                 teamId = team.GetId();
