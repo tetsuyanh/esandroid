@@ -20,7 +20,7 @@ public class EsaWeb {
     private static final Pattern sPatternHostALl = Pattern.compile("^([0-9a-z-.]*)esa.io$");
     private static final Pattern sPatternHostTeam = Pattern.compile("^([0-9a-z-]+).esa.io$");
     private static final Pattern sPatternPathPost = Pattern.compile("^/posts/([0-9]+)(#([0-9-])+)?$");
-    private static final String sPatternPostTitle = "^(\\[WIP\\] )?(.+) - [0-9a-z-]+.esa.io$";
+    private static final String sPatternTitle = "^(\\[WIP\\] )?(.+) - [0-9a-z-]+.esa.io$";
     private static final String sFormatPost = "https://%s.esa.io/posts/%d";
     private static final Set<String> sDomainSetGoogleAuth = new HashSet<>(Arrays.asList(
             "accounts.google.com",
@@ -49,6 +49,16 @@ public class EsaWeb {
         return null;
     }
 
+    public static boolean isPathRoot(String urlString) {
+        try {
+            String path = new URL(urlString).getPath();
+            return path.length() == 0 || path.equals("/");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public static Integer getPostId(String urlString) {
         try {
             Matcher m = sPatternPathPost.matcher(new URL(urlString).getPath());
@@ -59,14 +69,14 @@ public class EsaWeb {
         return null;
     }
 
-    public static String getPostUrl(String teamName, int postId) {
-        return String.format(Locale.JAPAN, sFormatPost, teamName, postId);
-    }
-
     public static String getPostTitle(String pageTitle) {
-        Pattern p = Pattern.compile(sPatternPostTitle);
+        Pattern p = Pattern.compile(sPatternTitle);
         Matcher m = p.matcher(pageTitle);
         return m.find() ? m.group(2) : null;
+    }
+
+    public static String getPostUrl(String teamName, int postId) {
+        return String.format(Locale.JAPAN, sFormatPost, teamName, postId);
     }
 
 }

@@ -11,6 +11,7 @@ public class EsaWebTest {
     private final String URL_ESA_ROOT = "https://esa.io/concept";
     private final String URL_OTHER = "https://google.com";
 
+    private final String URL_MYTEAM = "https://myteam.esa.io";
     private final String URL_MYTEAM_POST_10 = "https://myteam.esa.io/posts/10";
     private final String URL_MYTEAM_POST_10_ANCHOR = "https://myteam.esa.io/posts/10#2-1-0";
     private final String URL_MYTEAM_POST_ILLEGAL = "https://myteam.esa.io/posts/abc";
@@ -35,6 +36,13 @@ public class EsaWebTest {
     }
 
     @Test
+    public void isPathRoot() throws Exception {
+        assertEquals(true, EsaWeb.isPathRoot(URL_MYTEAM));
+        assertEquals(true, EsaWeb.isPathRoot(URL_MYTEAM + "/"));
+        assertEquals(false, EsaWeb.isPathRoot(URL_MYTEAM_POST_10));
+    }
+
+    @Test
     public void getPostId() throws Exception {
         assertEquals(Integer.valueOf(10), EsaWeb.getPostId(URL_MYTEAM_POST_10));
         assertEquals(Integer.valueOf(10), EsaWeb.getPostId(URL_MYTEAM_POST_10_ANCHOR));
@@ -43,16 +51,16 @@ public class EsaWebTest {
     }
 
     @Test
-    public void getPostUrl() throws Exception {
-        assertEquals(URL_MYTEAM_POST_10, EsaWeb.getPostUrl("myteam", 10));
-        assertEquals(URL_MYTEAMSUB_POST_10, EsaWeb.getPostUrl("myteam-sub", 10));
-    }
-
-    @Test
     public void getPostTitle() throws Exception {
         assertEquals("title", EsaWeb.getPostTitle("title - myteam.esa.io"));
         assertEquals("title", EsaWeb.getPostTitle("[WIP] title - myteam.esa.io"));
         assertEquals("dir/title", EsaWeb.getPostTitle("dir/title - myteam.esa.io"));
+    }
+
+    @Test
+    public void getPostUrl() throws Exception {
+        assertEquals(URL_MYTEAM_POST_10, EsaWeb.getPostUrl("myteam", 10));
+        assertEquals(URL_MYTEAMSUB_POST_10, EsaWeb.getPostUrl("myteam-sub", 10));
     }
 
 }

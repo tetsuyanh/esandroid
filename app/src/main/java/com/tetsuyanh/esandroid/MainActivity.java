@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity
         mWebView.getSettings().setJavaScriptEnabled(true);
         Url url = mUrlService.getLatestUrl(null);
         if (url != null) {
-            mCurrentTeam = url.getTeamName();
             mWebView.loadUrl(url.getUrl());
         } else {
             mWebView.loadUrl(EsaWeb.URL_ROOT);
@@ -275,10 +274,16 @@ public class MainActivity extends AppCompatActivity
 
             mLoadingSpinner.setVisibility(View.GONE);
 
-            // update under team domain
             String team = EsaWeb.getTeam(url);
             if (team != null) {
                 mUrlService.setLatestUrl(team, url);
+
+                boolean shouldUpdateMenu = false;
+                if (!team.equals(mCurrentTeam)) {
+                    mCurrentTeam = team;
+                    updateDrawerTitle(mCurrentTeam);
+                    shouldUpdateMenu = true;
+                }
 
                 Integer postId = EsaWeb.getPostId(url);
                 if (postId != null) {
@@ -288,6 +293,10 @@ public class MainActivity extends AppCompatActivity
 
                     String title = EsaWeb.getPostTitle(mWebView.getTitle());
                     mHistoryService.Push(team, new Post(postId, title));
+                    shouldUpdateMenu = true;
+                }
+
+                if (shouldUpdateMenu) {
                     updateDrawerMenu();
                 }
             }
@@ -304,16 +313,11 @@ public class MainActivity extends AppCompatActivity
                 startActivity(i);
                 return true;
             }
+            // reload next team latest url if it existed and not root
             String team = EsaWeb.getTeam(url);
-            if (team != null && !team.equals(mCurrentTeam)) {
-                // change team
-                mCurrentTeam = team;
-                updateDrawerTitle(mCurrentTeam);
-                updateDrawerMenu();
-                // reload the latest url of next team if it existed
-                Url urlLatest = mUrlService.getLatestUrl(mCurrentTeam);
-                if (urlLatest != null) {
-                    updateDrawerMenu();
+            if (team != null && !team.equals(mCurrentTeam) && EsaWeb.isPathRoot(url)) {
+                Url urlLatest = mUrlService.getLatestUrl(team);
+                if (urlLatest != null && !EsaWeb.isPathRoot(urlLatest.getUrl())) {
                     mWebView.loadUrl(urlLatest.getUrl());
                     return true;
                 }
