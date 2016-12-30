@@ -26,16 +26,16 @@ public class BookmarkService {
         mTeamPostList = new HashMap<>();
     }
 
-    public boolean Has(String teamName, Integer postId) {
-        return getList(teamName).contains(new Post(postId, null));
+    public boolean has(String teamName, Integer postId) {
+        return list(teamName).contains(new Post(postId, null));
     }
 
-    public List<Post> GetList(String team) {
-        return getList(team);
+    public List<Post> getList(String team) {
+        return list(team);
     }
 
-    public boolean Push(String teamName, Post post) {
-        List<Post> list = getList(teamName);
+    public boolean push(String teamName, Post post) {
+        List<Post> list = list(teamName);
         if (list.size() >= BOOKMARK_SIZE) {
             Log.e(TAG, "bookmark full size");
             return false;
@@ -51,8 +51,8 @@ public class BookmarkService {
         }
     }
 
-    public boolean Pop(String teamName, Integer postId) {
-        List<Post> list = getList(teamName);
+    public boolean pop(String teamName, Integer postId) {
+        List<Post> list = list(teamName);
         if (BookmarkHelper.delete(mContext, teamName, postId) == 1) {
             list.remove(new Post(postId, null));
             clearList(teamName);
@@ -63,7 +63,7 @@ public class BookmarkService {
         }
     }
 
-    private List<Post> getList(String teamName) {
+    private List<Post> list(String teamName) {
         List<Post> list = mTeamPostList.get(teamName);
         if (list == null) {
             list = BookmarkHelper.getList(mContext, teamName);

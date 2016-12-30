@@ -1,5 +1,7 @@
 package com.tetsuyanh.esandroid;
 
+import com.tetsuyanh.esandroid.entity.Post;
+import com.tetsuyanh.esandroid.fragment.PostListFragment;
 import com.tetsuyanh.esandroid.fragment.WebFragment;
 
 import android.os.Bundle;
@@ -20,11 +22,13 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        WebFragment.OnFragmentInteractionListener {
+        WebFragment.OnWebFragmentInteractionListener,
+        PostListFragment.OnPostListFragmentInteractionListener {
 
     private final String TAG = MainActivity.class.getSimpleName();
 
     private WebFragment mWebFragment;
+    private PostListFragment mPostListFragment;
 
     private MenuItem menuBookmark;
 
@@ -80,7 +84,7 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!mWebFragment.didBacked()) {
+        } else if (!getSupportFragmentManager().popBackStackImmediate() && !mWebFragment.didBacked()) {
             super.onBackPressed();
         }
     }
@@ -122,14 +126,30 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        /*try {
-            String title = (String) item.getTitle();
-            String[] parts = title.split(":");
-            mWebView.loadUrl(EsaWeb.getPostUrl(mCurrentTeam, Integer.parseInt(parts[0])));
-        } catch (Exception e) {
-            Log.e(TAG, e.toString());
-        }*/
         // fragment
+        String team = mWebFragment.getTeam();
+        if (team != null) {
+            if (mPostListFragment == null) {
+                mPostListFragment = new PostListFragment();
+            }
+            mPostListFragment.setTeam(team);
+            switch (item.getItemId()) {
+                case R.id.nav_bookmark:
+                    mPostListFragment.setKind(PostListFragment.Kind.KIND_BOOKMARK);
+                    break;
+                case R.id.nav_history:
+                default:
+                    mPostListFragment.setKind(PostListFragment.Kind.KIND_HISTORY);
+                    break;
+            }
+
+            FragmentManager fragMgr = getSupportFragmentManager();
+            FragmentTransaction trans = fragMgr.beginTransaction();
+            trans.add(R.id.fragment_container, mPostListFragment);
+            trans.addToBackStack(null);
+            trans.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            trans.commit();
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -158,6 +178,16 @@ public class MainActivity extends AppCompatActivity
             if (visibility) {
                 menuBookmark.getIcon().setAlpha(isBookMarked ? 255 : 128);
             }
+        }
+    }
+
+    @Override
+    public void onSelectPost(Post post) {
+        if (getSupportFragmentManager().popBackStackImmediate()) {
+            Log.d(TAG, "popBackStack");
+            mWebFragment.load(post);
+        } else {
+            Log.d(TAG, "failed to popBackStack");
         }
     }
 }

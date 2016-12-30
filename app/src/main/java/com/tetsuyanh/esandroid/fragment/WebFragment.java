@@ -29,7 +29,7 @@ import com.tetsuyanh.esandroid.service.UrlService;
 public class WebFragment extends Fragment {
     private final String TAG = WebFragment.class.getSimpleName();
 
-    private OnFragmentInteractionListener mListener;
+    private OnWebFragmentInteractionListener mListener;
 
     private UrlService mUrlService;
     private BookmarkService mBookmarkService;
@@ -78,11 +78,11 @@ public class WebFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnWebFragmentInteractionListener) {
+            mListener = (OnWebFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnWebFragmentInteractionListener");
         }
     }
 
@@ -102,8 +102,7 @@ public class WebFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
+    public interface OnWebFragmentInteractionListener {
         void onChangeTeam(String teamName);
         void onUpdateBookmark(boolean visibility, boolean isBookMarked);
     }
@@ -119,12 +118,20 @@ public class WebFragment extends Fragment {
     public boolean addBookmark() {
         Integer postId = EsaWeb.getPostId(mWebView.getUrl());
         String title = EsaWeb.getPostTitle(mWebView.getTitle());
-        return postId != null && mBookmarkService.Push(mCurrentTeam, new Post(postId, title));
+        return postId != null && mBookmarkService.push(mCurrentTeam, new Post(postId, title));
     }
 
     public boolean removeBookmark() {
         Integer postId = EsaWeb.getPostId(mWebView.getUrl());
-        return postId != null && mBookmarkService.Pop(mCurrentTeam, postId);
+        return postId != null && mBookmarkService.pop(mCurrentTeam, postId);
+    }
+
+    public void load(Post post) {
+        mWebView.loadUrl(EsaWeb.getPostUrl(mCurrentTeam, post.getId()));
+    }
+
+    public String getTeam() {
+        return mCurrentTeam;
     }
 
     private WebViewClient mWebViewClient = new WebViewClient() {
@@ -167,10 +174,10 @@ public class WebFragment extends Fragment {
 
                 Integer postId = EsaWeb.getPostId(url);
                 if (postId != null) {
-                    mListener.onUpdateBookmark(true, mBookmarkService.Has(team, postId));
+                    mListener.onUpdateBookmark(true, mBookmarkService.has(team, postId));
 
                     String title = EsaWeb.getPostTitle(mWebView.getTitle());
-                    mHistoryService.Push(team, new Post(postId, title));
+                    mHistoryService.push(team, new Post(postId, title));
                 }
             }
         }
