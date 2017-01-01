@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="state_alpha_on">255</integer>
+    <integer name="state_alpha_off">128</integer>
+</resources>

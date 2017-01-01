@@ -139,13 +139,13 @@ public class WebFragment extends Fragment {
         @SuppressWarnings("deprecation")
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return urlLoading(url);
+            return urlChecker(url);
         }
 
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            return urlLoading(request.getUrl().toString());
+            return urlChecker(request.getUrl().toString());
         }
 
         @Override
@@ -186,7 +186,7 @@ public class WebFragment extends Fragment {
             Log.d(TAG, "----- onReceivedError");
         }
 
-        private boolean urlLoading(String url) {
+        private boolean urlChecker(String url) {
             // open external web page in browser app
             if (!EsaWeb.isInternal(url)) {
                 Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));

@@ -3,4 +3,6 @@
     <color name="colorPrimary">#09847e</color>
     <color name="colorPrimaryDark">#016b65</color>
     <color name="colorAccent">#F29600</color>
+
+    <color name="colorPostListBg">#CCCCCC</color>
 </resources>

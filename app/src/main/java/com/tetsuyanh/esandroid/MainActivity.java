@@ -55,8 +55,7 @@ public class MainActivity extends AppCompatActivity
         mWebFragment = new WebFragment();
         FragmentManager fragMgr = getSupportFragmentManager();
         FragmentTransaction trans = fragMgr.beginTransaction();
-        trans.add(R.id.fragment_container, mWebFragment);
-        trans.addToBackStack(null);
+        trans.add(R.id.web_container, mWebFragment);
         trans.commit();
 
     }
@@ -84,7 +83,11 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (!getSupportFragmentManager().popBackStackImmediate() && !mWebFragment.didBacked()) {
+        } else if (getSupportFragmentManager().popBackStackImmediate()) {
+            // nothing to do
+        } else if (mWebFragment != null && mWebFragment.didBacked()) {
+            // nothing to do
+        } else{
             super.onBackPressed();
         }
     }
@@ -101,22 +104,24 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        int alphaOn = getResources().getInteger(R.integer.state_alpha_on);
+        int alphaOff = getResources().getInteger(R.integer.state_alpha_off);
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_bookmark) {
-            if (item.getIcon().getAlpha() == 128) {
+            if (item.getIcon().getAlpha() == alphaOff) {
                 if (mWebFragment.addBookmark()) {
-                    showToast("(\\( ⁰⊖⁰ )/)");
-                    item.getIcon().setAlpha(255);
+                    showToast(R.string.toast_esa_fine);
+                    item.getIcon().setAlpha(alphaOn);
                 } else {
-                    showToast("failed");
+                    showToast(R.string.toast_failed);
                 }
             } else {
                 if (mWebFragment.removeBookmark()) {
-                    showToast("──=≡=͟͟͞͞(\\( ⁰⊖⁰)/)");
-                    item.getIcon().setAlpha(128);
+                    showToast(R.string.toast_esa_leave);
+                    item.getIcon().setAlpha(alphaOff);
                 } else {
-                    showToast("failed");
+                    showToast(R.string.toast_failed);
                 }
             }
         }
@@ -145,10 +150,12 @@ public class MainActivity extends AppCompatActivity
 
             FragmentManager fragMgr = getSupportFragmentManager();
             FragmentTransaction trans = fragMgr.beginTransaction();
-            trans.add(R.id.fragment_container, mPostListFragment);
+            trans.add(R.id.postlist_container, mPostListFragment);
             trans.addToBackStack(null);
             trans.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             trans.commit();
+        } else {
+            showToast(R.string.toast_no_team);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -156,8 +163,8 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private void showToast(String message) {
-        Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+    private void showToast(int resId) {
+        Toast toast = Toast.makeText(this, getResources().getString(resId), Toast.LENGTH_SHORT);
         toast.show();
     }
 
@@ -176,7 +183,9 @@ public class MainActivity extends AppCompatActivity
             menuBookmark.setVisible(visibility);
 
             if (visibility) {
-                menuBookmark.getIcon().setAlpha(isBookMarked ? 255 : 128);
+                int alphaOn = getResources().getInteger(R.integer.state_alpha_on);
+                int alphaOff = getResources().getInteger(R.integer.state_alpha_off);
+                menuBookmark.getIcon().setAlpha(isBookMarked ? alphaOn : alphaOff);
             }
         }
     }
