@@ -9,29 +9,9 @@
     tools:context="com.tetsuyanh.esandroid.MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <WebView
-        android:id="@+id/webview"
+    <RelativeLayout
+        android:id="@+id/web_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </WebView>
-
-    <TextView
-        android:id="@+id/errorpage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/white"
-        android:text="ページの取得に失敗しました"
-        android:textColor="@android:color/black"
-        android:textSize="20dp"
-        android:visibility="gone" />
-
-    <ProgressBar
-        android:id="@+id/loading_spinner"
-        style="@style/Widget.AppCompat.ProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:visibility="gone" />
+        android:layout_height="match_parent" />
 
 </RelativeLayout>

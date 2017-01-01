@@ -1,22 +1,13 @@
 package com.tetsuyanh.esandroid;
 
-import com.tetsuyanh.esandroid.entity.Url;
-import com.tetsuyanh.esandroid.esa.EsaWeb;
 import com.tetsuyanh.esandroid.entity.Post;
-import com.tetsuyanh.esandroid.service.BookmarkService;
-import com.tetsuyanh.esandroid.service.HistoryService;
-import com.tetsuyanh.esandroid.service.UrlService;
+import com.tetsuyanh.esandroid.fragment.PostListFragment;
+import com.tetsuyanh.esandroid.fragment.WebFragment;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
-import android.view.View;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -26,31 +17,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.nio.charset.Charset;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        WebFragment.OnWebFragmentInteractionListener,
+        PostListFragment.OnPostListFragmentInteractionListener {
 
     private final String TAG = MainActivity.class.getSimpleName();
 
-    private String mCurrentTeam;
-    private UrlService mUrlService;
-    private BookmarkService mBookmarkService;
-    private HistoryService mHistoryService;
+    private WebFragment mWebFragment;
+    private PostListFragment mPostListFragment;
 
-    private WebView mWebView;
-    private View mLoadingSpinner;
     private MenuItem menuBookmark;
 
-    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "----- onCreate");
@@ -59,15 +40,6 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        // services
-        Context context = getApplicationContext();
-        mUrlService = new UrlService(context);
-        mBookmarkService = new BookmarkService(context);
-        mHistoryService = new HistoryService(context);
-
-        // views
-        mLoadingSpinner = findViewById(R.id.loading_spinner);
 
         // drawer
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -79,16 +51,13 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        // webView
-        mWebView = (WebView) findViewById(R.id.webview);
-        mWebView.setWebViewClient(mWebViewClient);
-        mWebView.getSettings().setJavaScriptEnabled(true);
-        Url url = mUrlService.getLatestUrl(null);
-        if (url != null) {
-            mWebView.loadUrl(url.getUrl());
-        } else {
-            mWebView.loadUrl(EsaWeb.URL_ROOT);
-        }
+        // web fragment
+        mWebFragment = new WebFragment();
+        FragmentManager fragMgr = getSupportFragmentManager();
+        FragmentTransaction trans = fragMgr.beginTransaction();
+        trans.add(R.id.web_container, mWebFragment);
+        trans.commit();
+
     }
 
     @Override
@@ -114,9 +83,11 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (mWebView != null && mWebView.canGoBack()) {
-            mWebView.goBack();
-        } else {
+        } else if (getSupportFragmentManager().popBackStackImmediate()) {
+            // nothing to do
+        } else if (mWebFragment != null && mWebFragment.didBacked()) {
+            // nothing to do
+        } else{
             super.onBackPressed();
         }
     }
@@ -133,31 +104,24 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        int alphaOn = getResources().getInteger(R.integer.state_alpha_on);
+        int alphaOff = getResources().getInteger(R.integer.state_alpha_off);
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_bookmark) {
-            if (item.getIcon().getAlpha() == 128) {
-                Integer postId = EsaWeb.getPostId(mWebView.getUrl());
-                String title = EsaWeb.getPostTitle(mWebView.getTitle());
-                if (postId != null) {
-                    if (mBookmarkService.Push(mCurrentTeam, new Post(postId, title))) {
-                        updateDrawerMenu();
-                        showToast("(\\( ⁰⊖⁰ )/)");
-                        item.getIcon().setAlpha(255);
-                    } else {
-                        showToast("failed");
-                    }
+            if (item.getIcon().getAlpha() == alphaOff) {
+                if (mWebFragment.addBookmark()) {
+                    showToast(R.string.toast_esa_fine);
+                    item.getIcon().setAlpha(alphaOn);
+                } else {
+                    showToast(R.string.toast_failed);
                 }
             } else {
-                Integer postId = EsaWeb.getPostId(mWebView.getUrl());
-                if (postId != null) {
-                    if (mBookmarkService.Pop(mCurrentTeam, postId)) {
-                        updateDrawerMenu();
-                        showToast("──=≡=͟͟͞͞(\\( ⁰⊖⁰)/)");
-                        item.getIcon().setAlpha(128);
-                    } else {
-                        showToast("failed");
-                    }
+                if (mWebFragment.removeBookmark()) {
+                    showToast(R.string.toast_esa_leave);
+                    item.getIcon().setAlpha(alphaOff);
+                } else {
+                    showToast(R.string.toast_failed);
                 }
             }
         }
@@ -167,12 +131,31 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        try {
-            String title = (String) item.getTitle();
-            String[] parts = title.split(":");
-            mWebView.loadUrl(EsaWeb.getPostUrl(mCurrentTeam, Integer.parseInt(parts[0])));
-        } catch (Exception e) {
-            Log.e(TAG, e.toString());
+        // fragment
+        String team = mWebFragment.getTeam();
+        if (team != null) {
+            if (mPostListFragment == null) {
+                mPostListFragment = new PostListFragment();
+            }
+            mPostListFragment.setTeam(team);
+            switch (item.getItemId()) {
+                case R.id.nav_bookmark:
+                    mPostListFragment.setKind(PostListFragment.Kind.KIND_BOOKMARK);
+                    break;
+                case R.id.nav_history:
+                default:
+                    mPostListFragment.setKind(PostListFragment.Kind.KIND_HISTORY);
+                    break;
+            }
+
+            FragmentManager fragMgr = getSupportFragmentManager();
+            FragmentTransaction trans = fragMgr.beginTransaction();
+            trans.add(R.id.postlist_container, mPostListFragment);
+            trans.addToBackStack(null);
+            trans.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            trans.commit();
+        } else {
+            showToast(R.string.toast_no_team);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -180,150 +163,40 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private void updateDrawerTitle(String team) {
-        TextView text = (TextView)findViewById(R.id.nav_header_label);
-        text.setText(team);
-        text.invalidate();
-    }
-
-    private void updateDrawerMenu() {
-        NavigationView navView = (NavigationView)findViewById(R.id.nav_view);
-        Menu menu = navView.getMenu();
-
-        menu.clear();
-
-        List<Post> bookmarks = mBookmarkService.GetList(mCurrentTeam);
-        if (bookmarks != null && bookmarks.size() > 0) {
-            Menu menuBookmarks = menu.addSubMenu(R.string.drawer_bookmarks);
-            for (Post p : bookmarks) {
-                menuBookmarks.add(p.getId() + ":" + omitTitle(p.getTitle()));
-            }
-        }
-
-        List<Post> histories = mHistoryService.GetList(mCurrentTeam);
-        Menu menuHistories = menu.addSubMenu(R.string.drawer_histories);
-        for(Post p: histories) {
-            menuHistories.add(p.getId() + ":" + omitTitle(p.getTitle()));
-        }
-    }
-
-    private void showToast(String message) {
-        Toast toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+    private void showToast(int resId) {
+        Toast toast = Toast.makeText(this, getResources().getString(resId), Toast.LENGTH_SHORT);
         toast.show();
     }
 
-    private String omitTitle(String title) {
-        String[] layers = title.split("/");
-        int length = layers.length;
-        if (length == 1) {
-            if (title.getBytes(Charset.forName("Shift_JIS")).length > 24) {
-                return title.substring(0, 12);
-            } else {
-                return title;
+    @Override
+    public void onChangeTeam(String teamName) {
+        Log.d(TAG, "onChangeTeam");
+        TextView text = (TextView)findViewById(R.id.nav_header_label);
+        text.setText(teamName);
+        text.invalidate();
+    }
+
+    @Override
+    public void onUpdateBookmark(boolean visibility, boolean isBookMarked) {
+        Log.d(TAG, "onUpdateBookmarkable");
+        if (menuBookmark != null) {
+            menuBookmark.setVisible(visibility);
+
+            if (visibility) {
+                int alphaOn = getResources().getInteger(R.integer.state_alpha_on);
+                int alphaOff = getResources().getInteger(R.integer.state_alpha_off);
+                menuBookmark.getIcon().setAlpha(isBookMarked ? alphaOn : alphaOff);
             }
-        } else {
-            StringBuilder sb = new StringBuilder();
-            String top = layers[0];
-            if (top.getBytes(Charset.forName("Shift_JIS")).length > 12) {
-                sb.append(top.substring(0, 6)).append("...");
-            } else {
-                sb.append(top);
-            }
-            if (length == 2) {
-                sb.append("/");
-            } else {
-                sb.append("/.../");
-            }
-            String end = layers[length-1];
-            if (end.getBytes(Charset.forName("Shift_JIS")).length > 12) {
-                sb.append(end.substring(0, 6)).append("...");
-            } else {
-                sb.append(end);
-            }
-            return sb.toString();
         }
     }
 
-    /** WebViewClientクラス */
-    private WebViewClient mWebViewClient = new WebViewClient() {
-
-        @SuppressWarnings("deprecation")
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return urlLoading(url);
+    @Override
+    public void onSelectPost(Post post) {
+        if (getSupportFragmentManager().popBackStackImmediate()) {
+            Log.d(TAG, "popBackStack");
+            mWebFragment.load(post);
+        } else {
+            Log.d(TAG, "failed to popBackStack");
         }
-
-        @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            return urlLoading(request.getUrl().toString());
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            mLoadingSpinner.setVisibility(View.VISIBLE);
-
-            if (menuBookmark != null) menuBookmark.setVisible(false);
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-
-            mLoadingSpinner.setVisibility(View.GONE);
-
-            String team = EsaWeb.getTeam(url);
-            if (team != null) {
-                mUrlService.setLatestUrl(team, url);
-
-                boolean shouldUpdateMenu = false;
-                if (!team.equals(mCurrentTeam)) {
-                    mCurrentTeam = team;
-                    updateDrawerTitle(mCurrentTeam);
-                    shouldUpdateMenu = true;
-                }
-
-                Integer postId = EsaWeb.getPostId(url);
-                if (postId != null) {
-                    Boolean isBookMarked = mBookmarkService.Has(team, postId);
-                    menuBookmark.setVisible(true);
-                    menuBookmark.getIcon().setAlpha(isBookMarked? 255 : 128);
-
-                    String title = EsaWeb.getPostTitle(mWebView.getTitle());
-                    mHistoryService.Push(team, new Post(postId, title));
-                    shouldUpdateMenu = true;
-                }
-
-                if (shouldUpdateMenu) {
-                    updateDrawerMenu();
-                }
-            }
-        }
-
-        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-            Log.d(TAG, "----- onReceivedError");
-        }
-
-        private boolean urlLoading(String url) {
-            // open external web page in browser app
-            if (!EsaWeb.isInternal(url)) {
-                Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                startActivity(i);
-                return true;
-            }
-            // reload next team latest url if it existed and not root
-            String team = EsaWeb.getTeam(url);
-            if (team != null && !team.equals(mCurrentTeam) && EsaWeb.isPathRoot(url)) {
-                Url urlLatest = mUrlService.getLatestUrl(team);
-                if (urlLatest != null && !EsaWeb.isPathRoot(urlLatest.getUrl())) {
-                    mWebView.loadUrl(urlLatest.getUrl());
-                    return true;
-                }
-            }
-            return false;
-        }
-    };
-
+    }
 }
