@@ -26,12 +26,12 @@ public class HistoryService {
         mTeamPostList = new HashMap<>();
     }
 
-    public List<Post> GetList(String team) {
-        return getList(team);
+    public List<Post> getList(String team) {
+        return list(team);
     }
 
-    public boolean Push(String teamName, Post post) {
-        List<Post> list = getList(teamName);
+    public boolean push(String teamName, Post post) {
+        List<Post> list = list(teamName);
         // even if it fails on the way, remove first so as not to exceed the size
         if (list.contains(post)) {
             // remove same history if list already had
@@ -58,7 +58,7 @@ public class HistoryService {
     }
 
     private boolean pop(String teamName, Integer postId) {
-        List<Post> list = getList(teamName);
+        List<Post> list = list(teamName);
         int index = list.indexOf(new Post(postId, null));
         if (index == -1) {
             Log.e(TAG, "not found post");
@@ -75,7 +75,7 @@ public class HistoryService {
         }
     }
 
-    private List<Post> getList(String teamName) {
+    private List<Post> list(String teamName) {
         List<Post> list = mTeamPostList.get(teamName);
         if (list == null) {
             list = HistoryHelper.getList(mContext, teamName);
