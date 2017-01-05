@@ -21,8 +21,9 @@ import java.util.List;
 public class PostListFragment extends Fragment {
     private static final String TAG = PostListFragment.class.getSimpleName();
     public enum Kind {
-        KIND_BOOKMARK(1),
-        KIND_HISTORY(2);
+        UNDEFINED(0),
+        BOOKMARK(1),
+        HISTORY(2);
 
         private final int id;
         Kind(final int id) {
@@ -62,6 +63,8 @@ public class PostListFragment extends Fragment {
         mBookmarkService = new BookmarkService(context);
         mHistoryService = new HistoryService(context);
         mDivider = new PostListDivider(context);
+
+        setRetainInstance(true);
     }
 
     @Override
@@ -74,15 +77,15 @@ public class PostListFragment extends Fragment {
 
         List<Post> list = null;
         switch (mKind) {
-            case KIND_BOOKMARK:
+            case BOOKMARK:
                 list = mBookmarkService.getList(mTeam);
                 break;
-            case KIND_HISTORY:
+            case HISTORY:
                 list = mHistoryService.getList(mTeam);
                 break;
         }
 
-        if (recyclerView != null && list != null && list.size() > 0) {
+        if (mKind != Kind.UNDEFINED && recyclerView != null && list != null && list.size() > 0) {
             Context context = recyclerView.getContext();
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
             recyclerView.setAdapter(new PostListRecyclerViewAdapter(list, mListener));
@@ -112,10 +115,6 @@ public class PostListFragment extends Fragment {
         Log.d(TAG, "//////// onDetach:");
         super.onDetach();
         mListener = null;
-    }
-
-    public String getTeam() {
-        return mTeam;
     }
 
     public void setTeam(String team) {

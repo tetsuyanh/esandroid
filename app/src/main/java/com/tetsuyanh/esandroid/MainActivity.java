@@ -52,12 +52,13 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         // web fragment
-        mWebFragment = new WebFragment();
-        FragmentManager fragMgr = getSupportFragmentManager();
-        FragmentTransaction trans = fragMgr.beginTransaction();
-        trans.add(R.id.web_container, mWebFragment);
-        trans.commit();
-
+        if (mWebFragment == null) {
+            mWebFragment = new WebFragment();
+            FragmentManager fragMgr = getSupportFragmentManager();
+            FragmentTransaction trans = fragMgr.beginTransaction();
+            trans.add(R.id.web_container, mWebFragment);
+            trans.commit();
+        }
     }
 
     @Override
@@ -140,11 +141,11 @@ public class MainActivity extends AppCompatActivity
             mPostListFragment.setTeam(team);
             switch (item.getItemId()) {
                 case R.id.nav_bookmark:
-                    mPostListFragment.setKind(PostListFragment.Kind.KIND_BOOKMARK);
+                    mPostListFragment.setKind(PostListFragment.Kind.BOOKMARK);
                     break;
                 case R.id.nav_history:
                 default:
-                    mPostListFragment.setKind(PostListFragment.Kind.KIND_HISTORY);
+                    mPostListFragment.setKind(PostListFragment.Kind.HISTORY);
                     break;
             }
 

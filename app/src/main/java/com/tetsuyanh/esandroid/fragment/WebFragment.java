@@ -49,6 +49,8 @@ public class WebFragment extends Fragment {
         mUrlService = new UrlService(context);
         mBookmarkService = new BookmarkService(context);
         mHistoryService = new HistoryService(context);
+
+        setRetainInstance(true);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
