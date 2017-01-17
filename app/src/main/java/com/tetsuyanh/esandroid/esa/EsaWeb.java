@@ -19,6 +19,7 @@ public class EsaWeb {
 
     private static final Pattern sPatternHostALl = Pattern.compile("^([0-9a-z-.]*)esa.io$");
     private static final Pattern sPatternHostTeam = Pattern.compile("^([0-9a-z-]+).esa.io$");
+    private static final Pattern sPatternReferenceReadme = Pattern.compile("^path=(%2F[0-9a-zA-Z%]+)+%2F__README__$");
     private static final Pattern sPatternPathPost = Pattern.compile("^/posts/([0-9]+)(#([0-9-])+)?$");
     private static final String sPatternTitle = "^(\\[WIP\\] )?(.+) - [0-9a-z-]+.esa.io$";
     private static final String sFormatPost = "https://%s.esa.io/posts/%d";
@@ -33,9 +34,7 @@ public class EsaWeb {
             String host = new URL(urlString).getHost();
             Matcher m = sPatternHostALl.matcher(host);
             return m.matches() || sDomainSetGoogleAuth.contains(host);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return false;
     }
 
@@ -43,9 +42,7 @@ public class EsaWeb {
         try {
             Matcher m = sPatternHostTeam.matcher(new URL(urlString).getHost());
             return m.find() ? m.group(1) : null;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return null;
     }
 
@@ -53,9 +50,15 @@ public class EsaWeb {
         try {
             String path = new URL(urlString).getPath();
             return path.length() == 0 || path.equals("/");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
+        return false;
+    }
+
+    public static boolean isReferenceReadme(String urlString) {
+        try {
+            Matcher m = sPatternReferenceReadme.matcher(new URL(urlString).getRef());
+            return m.find();
+        } catch (Exception e) {}
         return false;
     }
 
@@ -63,9 +66,7 @@ public class EsaWeb {
         try {
             Matcher m = sPatternPathPost.matcher(new URL(urlString).getPath());
             return m.find() ? Integer.parseInt(m.group(1)) : null;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) {}
         return null;
     }
 
