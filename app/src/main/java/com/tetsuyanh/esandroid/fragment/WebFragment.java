@@ -7,12 +7,15 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
@@ -38,6 +41,8 @@ public class WebFragment extends Fragment {
     private WebView mWebView;
     private View mLoadingSpinner;
     private String mCurrentTeam;
+
+    private Handler handlerForJavascriptInterface = new Handler();
 
     public WebFragment() {}
 
@@ -67,6 +72,7 @@ public class WebFragment extends Fragment {
         mWebView = (WebView) v.findViewById(R.id.webview);
         mWebView.setWebViewClient(mWebViewClient);
         mWebView.getSettings().setJavaScriptEnabled(true);
+        mWebView.addJavascriptInterface(new MyJavaScriptInterface(getActivity().getApplicationContext()), "HtmlViewer");
         Url url = mUrlService.getLatestUrl(null);
         if (url != null) {
             mWebView.loadUrl(url.getUrl());
@@ -174,12 +180,15 @@ public class WebFragment extends Fragment {
                     mListener.onChangeTeam(mCurrentTeam);
                 }
 
-                Integer postId = EsaWeb.getPostId(url);
-                if (postId != null) {
-                    mListener.onUpdateBookmark(true, mBookmarkService.has(team, postId));
-
-                    String title = EsaWeb.getPostTitle(mWebView.getTitle());
-                    mHistoryService.push(team, new Post(postId, title));
+                if (EsaWeb.isReferenceReadme(url)) {
+                    mWebView.loadUrl("javascript:var tag = document.getElementsByClassName('category-heading__title--readme')[0]; window.HtmlViewer.showHTML(tag.href, tag.innerHTML);");
+                } else {
+                    Integer postId = EsaWeb.getPostId(url);
+                    if (postId != null) {
+                        mListener.onUpdateBookmark(true, mBookmarkService.has(team, postId));
+                        String title = EsaWeb.getPostTitle(mWebView.getTitle());
+                        mHistoryService.push(team, new Post(postId, title));
+                    }
                 }
             }
         }
@@ -207,5 +216,31 @@ public class WebFragment extends Fragment {
             return false;
         }
     };
+
+    private class MyJavaScriptInterface
+    {
+        private Context ctx;
+
+        MyJavaScriptInterface(Context ctx) {
+            this.ctx = ctx;
+        }
+
+        @JavascriptInterface
+        public void showHTML(String url, final String title) {
+            Log.d(TAG, "url: " + url + ", title: " + title);
+            final String team = EsaWeb.getTeam(url);
+            final Integer postId = EsaWeb.getPostId(url);
+            handlerForJavascriptInterface.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (team != null && postId != null) {
+                        mListener.onUpdateBookmark(true, mBookmarkService.has(team, postId));
+                        mHistoryService.push(team, new Post(postId, title));
+                    }
+                }
+            });
+
+        }
+    }
 
 }

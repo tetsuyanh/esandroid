@@ -12,6 +12,7 @@ public class EsaWebTest {
     private final String URL_OTHER = "https://google.com";
 
     private final String URL_MYTEAM = "https://myteam.esa.io";
+    private final String URL_MYTEAM_FRAGMENT_README = "https://myteam.esa.io/#path=%2Fhoge%2F%e3%81%82%e3%81%84%2F__README__";
     private final String URL_MYTEAM_POST_10 = "https://myteam.esa.io/posts/10";
     private final String URL_MYTEAM_POST_10_ANCHOR = "https://myteam.esa.io/posts/10#2-1-0";
     private final String URL_MYTEAM_POST_ILLEGAL = "https://myteam.esa.io/posts/abc";
@@ -40,6 +41,13 @@ public class EsaWebTest {
         assertEquals(true, EsaWeb.isPathRoot(URL_MYTEAM));
         assertEquals(true, EsaWeb.isPathRoot(URL_MYTEAM + "/"));
         assertEquals(false, EsaWeb.isPathRoot(URL_MYTEAM_POST_10));
+    }
+
+    @Test
+    public void isFragmentReadme() throws Exception {
+        assertEquals(true, EsaWeb.isReferenceReadme(URL_MYTEAM_FRAGMENT_README));
+        assertEquals(false, EsaWeb.isReferenceReadme(URL_MYTEAM));
+        assertEquals(false, EsaWeb.isReferenceReadme(URL_MYTEAM_POST_10));
     }
 
     @Test

@@ -7,7 +7,7 @@ android {
         applicationId "com.tetsuyanh.esandroid"
         minSdkVersion 19
         targetSdkVersion 25
-        versionCode 14
+        versionCode 15
         versionName "0.1.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -23,6 +23,7 @@ android {
             versionNameSuffix "(debug)"
             debuggable true
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             buildConfigField "boolean", "IS_DEBUG", "true"
         }
     }

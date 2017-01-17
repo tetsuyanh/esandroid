@@ -15,3 +15,10 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-keepattributes JavascriptInterface
+-keep public class com.tetsuyanh.esandroid.fragment.WebFragment$MyJavaScriptInterface
+-keep public class * implements com.tetsuyanh.esandroid.fragment.WebFragment$MyJavaScriptInterface
+-keepclassmembers class com.tetsuyanh.esandroid.fragment.WebFragment$MyJavaScriptInterface {
+    <methods>;
+}
