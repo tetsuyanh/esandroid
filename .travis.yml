@@ -25,4 +25,4 @@ cache:
   directories:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
-script: ./gradlew app:testDebug
+script: ./gradlew app:test
