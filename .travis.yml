@@ -1,0 +1,28 @@
+language: android
+jdk: oraclejdk8
+sudo: false
+android:
+  components:
+  - platform-tools
+  - tools
+  - build-tools-25.0.1
+  - android-25
+  - extra-google-google_play_services
+  - extra-google-m2repository
+  - extra-android-m2repository
+  - addon-google_apis-google-19
+licenses:
+  - android-sdk-preview-license-.+
+  - android-sdk-license-.+
+  - google-gdk-license-.+
+notifications:
+  email: false
+  slack:
+    secure: B2G7tZsykl+KYkIV3ZwowugfQ9Jk2oLVpe9hyTqCJ2d+28qX0amcKGnXKA8p070/x6isLEZGz28WXSmgiz3iC5uDGM4+ileQHfElhHgHus/RBkMxPdYyG0noTbF1+3Cm6cvnRSSTGEwVomUTfq/5tN3awfF7lm+Dao0Gcsfe2GXm0Tzva5OYBfxwVoEC86mW/J17vhc/gA3z1aExG0PkYiouT/2lT/PT/RI3goEPFGEoXCokTtwDWCSZeE9TN6+rkUIrrFatRTKQ1+/tsgtop2fk0Njs+JjpuMnhG0QWqD//2N2Vh6bEr9zhP6ae1WTql3u1sl1RMELocpm2o7YdLP1wsqchCuU/w9AZty/KrGP/dskApbomegBOe/1pZRA/gd/5ilJ4gnKe5PGoiqM0pA+6uiElkb8BuIZKWdA+npUDK6RmolPtvTPVooEz0Oyh8gMOCW8Bqeo/6kgIrso6xMqsMuIHPuTeDn8OrGi08r4p5SePXhLp77x8GJAYX/Z/0mzsQIAZeif5aMQmJkWlDNans6snFuc0rsqZnFqdV2wy8NiA/6r4p8pP1SnLGzxK7Vnfl/TmNP7c4oQ3e40YBNZPeOP2IUwAfwmbvt46ufCU5ZqgqOmBWyBjqQO7YXen6GYFQWCGgxe05QiU4Sw5xHK8jKGvVObrrrAPdBIWcjk=
+before_cache:
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+cache:
+  directories:
+  - $HOME/.gradle/caches/
+  - $HOME/.gradle/wrapper/
+script: ./gradlew app:test
