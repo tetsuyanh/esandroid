@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tetsuyanh/esandroid.svg?branch=master)](https://travis-ci.org/tetsuyanh/esandroid)
+
 # esandroid
 
 <img src="https://raw.github.com/wiki/tetsuyanh/esandroid/img/logo_vertical.png" width="640"></img>
