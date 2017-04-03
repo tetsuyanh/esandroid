@@ -24,6 +24,7 @@ import com.tetsuyanh.esandroid.entity.Url;
 import com.tetsuyanh.esandroid.esa.EsaWeb;
 import com.tetsuyanh.esandroid.service.BookmarkService;
 import com.tetsuyanh.esandroid.service.HistoryService;
+import com.tetsuyanh.esandroid.service.LockService;
 import com.tetsuyanh.esandroid.service.UrlService;
 
 public class WebFragment extends Fragment {
@@ -33,6 +34,7 @@ public class WebFragment extends Fragment {
 
     private UrlService mUrlService;
     private BookmarkService mBookmarkService;
+    private LockService mLockService;
     private HistoryService mHistoryService;
 
     private WebView mWebView;
@@ -48,6 +50,7 @@ public class WebFragment extends Fragment {
         Context context = getActivity().getApplicationContext();
         mUrlService = new UrlService(context);
         mBookmarkService = new BookmarkService(context);
+        mLockService = new LockService(context);
         mHistoryService = new HistoryService(context);
 
         setRetainInstance(true);
@@ -106,7 +109,13 @@ public class WebFragment extends Fragment {
      */
     public interface OnWebFragmentInteractionListener {
         void onChangeTeam(String teamName);
+        void onNeedAuth(String url);
         void onUpdateBookmark(boolean visibility, boolean isBookMarked);
+        void onUpdateLock(boolean visibility, boolean isBookMarked);
+    }
+
+    public void load(String url) {
+        mWebView.loadUrl(url);
     }
 
     public boolean didBacked() {
@@ -136,31 +145,53 @@ public class WebFragment extends Fragment {
         return mCurrentTeam;
     }
 
+    public Integer getPostId() {
+        return EsaWeb.getPostId(mWebView.getUrl());
+    }
+
+    public String getTitle() {
+        return EsaWeb.getPostTitle(mWebView.getTitle());
+    }
+
+    public String getUrl() {
+        return mWebView.getUrl();
+    }
+
     private WebViewClient mWebViewClient = new WebViewClient() {
 
         @SuppressWarnings("deprecation")
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Log.d(TAG, "----- shouldOverrideUrlLoading: " + url);
             return urlChecker(url);
         }
 
         @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            Log.d(TAG, "----- shouldOverrideUrlLoading: " + request.getUrl().toString());
             return urlChecker(request.getUrl().toString());
         }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            Log.d(TAG, "----- onPageStarted: " + url);
             super.onPageStarted(view, url, favicon);
+
+            if (urlChecker(url)) {
+                mWebView.stopLoading();
+                return;
+            }
 
             mLoadingSpinner.setVisibility(View.VISIBLE);
 
             mListener.onUpdateBookmark(false, false);
+            mListener.onUpdateLock(false, false);
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            Log.d(TAG, "----- onPageFinished: " + url);
             super.onPageFinished(view, url);
 
             mLoadingSpinner.setVisibility(View.GONE);
@@ -177,6 +208,7 @@ public class WebFragment extends Fragment {
                 Integer postId = EsaWeb.getPostId(url);
                 if (postId != null) {
                     mListener.onUpdateBookmark(true, mBookmarkService.has(team, postId));
+                    mListener.onUpdateLock(true, mLockService.has(team, postId));
 
                     String title = EsaWeb.getPostTitle(mWebView.getTitle());
                     mHistoryService.push(team, new Post(postId, title));
@@ -184,24 +216,42 @@ public class WebFragment extends Fragment {
             }
         }
 
+        @SuppressWarnings("deprecation")
+        public void onReceivedError (WebView view, int errorCode, String description, String failingUrl) {
+            Log.d(TAG, "onReceivedError request: " + failingUrl);
+            Log.e(TAG, "onReceivedError code:" + String.valueOf(errorCode) + ", description:" + description);
+        }
+
+        @RequiresApi(Build.VERSION_CODES.M)
         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-            Log.d(TAG, "----- onReceivedError");
+            Log.d(TAG, "onReceivedError request: " + request.getUrl().toString());
+            Log.e(TAG, "onReceivedError code:" + String.valueOf(error.getErrorCode()) + ", description:" + error.getDescription());
         }
 
         private boolean urlChecker(String url) {
+            Log.d(TAG, "----- urlChecker: " + url);
             // open external web page in browser app
             if (!EsaWeb.isInternal(url)) {
                 Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(i);
                 return true;
             }
-            // reload next team latest url if it existed and not root
             String team = EsaWeb.getTeam(url);
-            if (team != null && !team.equals(mCurrentTeam) && EsaWeb.isPathRoot(url)) {
-                Url urlLatest = mUrlService.getLatestUrl(team);
-                if (urlLatest != null && !EsaWeb.isPathRoot(urlLatest.getUrl())) {
-                    mWebView.loadUrl(urlLatest.getUrl());
+            Integer postId = EsaWeb.getPostId(url);
+            if (team != null) {
+                // expire updatedAt to unlock
+                if (mLockService.isExpire(team, postId)) {
+                    mListener.onNeedAuth(url);
                     return true;
+                }
+
+                // reload next team latest url if it existed and not root
+                if (!team.equals(mCurrentTeam) && EsaWeb.isPathRoot(url)) {
+                    Url urlLatest = mUrlService.getLatestUrl(team);
+                    if (urlLatest != null && !EsaWeb.isPathRoot(urlLatest.getUrl())) {
+                        mWebView.loadUrl(urlLatest.getUrl());
+                        return true;
+                    }
                 }
             }
             return false;

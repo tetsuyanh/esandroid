@@ -4,16 +4,26 @@
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
+    <string name="action_lock">Lock</string>
     <string name="action_bookmark">Bookmark</string>
 
     <string name="drawer_bookmark">Bookmark</string>
+    <string name="drawer_lock">Lock</string>
     <string name="drawer_history">History</string>
 
     <string name="no_data_available">No data available</string>
+
+    <string name="fingerprint_description">Confirm fingerprint to continue</string>
+    <string name="fingerprint_hint">Touch sensor</string>
 
     <string name="toast_no_team">No team unusable</string>
     <string name="toast_esa_fine">(\\( ⁰⊖⁰ )/)</string>
     <string name="toast_esa_leave">──=≡=͟͟͞͞(\\( ⁰⊖⁰)/)</string>
     <string name="toast_failed">Failed</string>
+    <string name="toast_fingerprint_not_unavailable">Fingerprint not available</string>
+    <string name="toast_fingerprint_not_enrolled">Fingerprint not enrolled</string>
+
+    <string name="fingerprint_icon">fingerprint_icon</string>
+
 
 </resources>

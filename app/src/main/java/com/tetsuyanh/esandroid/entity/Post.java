@@ -7,6 +7,7 @@ package com.tetsuyanh.esandroid.entity;
 public class Post {
     private final Integer id;
     private final String title;
+    private Integer updatedAt;
 
     public Post(Integer id, String title) {
         this.id = id;
@@ -19,6 +20,14 @@ public class Post {
 
     public String getTitle() {
         return title;
+    }
+
+    public Integer getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Integer updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     @Override
