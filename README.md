@@ -19,6 +19,4 @@ If you have a bug or question about above, report a issue here, not contact esa.
 
 # License
 
-The icon depends on [the esa license](https://docs.esa.io/posts/79#0-12-0).
-
-Others MIT Licence, see [LICENSE](LICENSE).
+&copy; 2016 tetsuyanh, except the icon depends on [esa license](https://docs.esa.io/posts/79#0-12-0).
